@@ -194,8 +194,7 @@ Outputs
 
 - The ``results_contigsInfo.tsv`` file contains the loci coordinates in the genomes analyzed. The first column contains the identifiers of the input genomes and the other columns (with loci names in the headers) the locus coordinate information or the classification attributed by chewBBACA if it was not an exact match or inferred allele.
 
-	.. table::
-		:align: center
+	.. rst-class:: align-center
 
 		+--------------+---------------------------+-------------------------+-----+
 		| FILE         | locus1                    | locus2                  | ... |
@@ -217,8 +216,7 @@ Outputs
 
 - The ``results_alleles.tsv`` file contains the allelic profiles determined for the input samples. The first column has the identifiers of the genome assemblies. The remaining columns contain the allele identifiers or other classification labels for loci present in the schema, with the column headers being the locus identifiers.
 
-.. table::
-	:align: center
+.. rst-class:: align-center
 
 	+--------------+--------+--------+--------+--------+--------+-----+
 	| FILE         | locus1 | locus2 | locus3 | locus4 | locus5 | ... |

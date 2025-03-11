@@ -1,65 +1,40 @@
 LoadSchema - Upload a schema to Chewie-NS
 =========================================
 
-The *LoadSchema* module enables the upload of schemas to Chewie-NS.
+The *LoadSchema* module enables the upload of schemas to Chewie-NS instances.
 
 .. important::
-    **You need to be a registered user in Chewie-NS with Contributor privileges to be able to upload schemas!**
-
-    If you have registered at the `chewie-NS public website <https://chewbbaca.online/auth>`_
-    and want to contribute new schemas please contact us via e-mail at: imm-bioinfo@medicina.ulisboa.pt
+    **You need to be a registered user with Contributor privileges to be able to upload schemas!** If you have registered at the `chewie-NS public website <https://chewbbaca.online/auth>`_ and want to contribute new schemas please contact us via e-mail at: imm-bioinfo@medicina.ulisboa.pt
 
 To upload a schema to Chewie-NS it is required to provide:
 
 - The **path** to the local schema.
 
-  - The schema must have been created with chewBBACA v2.5.0 or a later version. If your schema was created with
-    an older version, please adapt the schema with the ``PrepExternalSchema`` process or run the 
-    ``AlleleCall`` process to convert the schema to the latest version.
+  - The schema must have been created with chewBBACA v2.5.0 or a later version. If your schema was created with an older version, please adapt the schema with the ``PrepExternalSchema`` process or run the ``AlleleCall`` process to convert the schema to the latest chewBBACA version.
 
-.. warning:: **Only schemas that have been used with the same valid
-             value per parameter can be uploaded (this restriction applies
-             to the BLAST Score Ratio, Prodigal training file, minimum 
-             sequence length, genetic code and sequence size variation 
-             threshold parameters).**
-             
-             Invalid or multiple values used in different ``AlleleCall`` runs
-             for a single parameter can lead to inconsistent results; thus,
-             it is strongly advised to always perform allele calling with
-             the same set of parameters and refrain from altering the initial
-             set of parameter values defined in the schema creation or
-             adaptation processes.
+.. warning::
+	**Only schemas that have been used with the same valid value per parameter can be uploaded (this restriction applies to the BLAST Score Ratio, Prodigal training file, minimum  sequence length, genetic code and sequence size variation threshold parameters).** Invalid or multiple values used in different allele calling runs for a single parameter can lead to inconsistent results; thus, it is strongly advised to always perform allele calling with the same set of parameters and refrain from altering the initial set of parameter values defined in the schema creation or adaptation processes.
 
 - The **species ID** or **scientific name** of the species that the schema will be associated to.
   
-  - There are 3 ways to know the **species ID** of a species: 1) you can consult the `Overview <https://chewbbaca.online/stats>`_ 
-    table in the Chewie-NS website; 2) you can use the 
-    `NSStats <https://github.com/B-UMMI/chewBBACA/blob/master/CHEWBBACA/CHEWBBACA_NS/stats_requests.py>`_ 
-    process in the  chewBBACA suite to directly obtain information about the species and schemas in Chewie-NS or; 3) you can 
-    query the ``/species/list`` API endpoint through  `Swagger <https://chewbbaca.online/api/NS/api/docs>`_ or a simple curl 
-    command (``e.g.: curl -X GET "https://chewbbaca.online/NS/api/species/list" 
-    -H  "accept: application/json"``).
-  - e.g.: ``9`` or ``Escherichia coli``.
+	- To know the ID of a species you can:
+		- Consult the `Overview <https://chewbbaca.online/stats>`_ table in the Chewie-NS public website.
+		- Query the ``/species/list`` API endpoint through `Swagger UI <https://chewbbaca.online/api/NS/api/docs>`_.
+		- Use a simple curl command: ``e.g.: curl -X GET "https://chewbbaca.online/NS/api/species/list" -H  "accept: application/json"``.
+	
+	Alternatively, you can use the `NSStats <https://github.com/B-UMMI/chewBBACA/blob/master/CHEWBBACA/CHEWBBACA_NS/stats_requests.py>`_  module to get information about the list of species in Chewie-NS.
 
 - A **name** for the schema.
 
-  - The name should be short and concise. The name **must be unique** among the set of names for 
-    schemas of the same species (this means that the using the same name of an existing schema will lead to an error)
-    and should not include spaces.
-  - e.g.: ``Project_cgMLST``, ``SRA_wgMLST``, ``Organization_cgMLST`` .
+  - The name should be short and concise. The name **must be unique** among the set of names for schemas of the same species (this means that the using the same name of an existing schema will lead to an error) and should not include spaces (e.g.: ``Project_cgMLST``, ``SRA_wgMLST``, ``Organization_cgMLST``).
 
 - A **prefix** for the loci identifiers to facilitate the identification of the schema they belong to.
 
-  - You may use the name of the schema as prefix to ensure prefix uniqueness for the loci
-    of a schema.
+  - You may use the name of the schema as prefix to ensure prefix uniqueness for the loci of a schema.
 
-Users may provide a description about the schema. The file with the description 
-will be sent to the Chewie-NS and displayed in the schema's page in the Chewie-NS website. Markdown syntax is 
-supported in order to allow greater customizability of the rendered description.
-For more information on the Markdown specification accepted by Chewie-NS please visit the
-`Github Flavored Markdown Specification page <https://github.github.com/gfm/>`_.
+Users may provide a description about the schema. The file with the description  will be sent to Chewie-NS and displayed in the schema's page in the website. Markdown syntax is  supported in order to allow greater customizability of the rendered description. For more information on the Markdown specification accepted by Chewie-NS please visit the `Github Flavored Markdown Specification page <https://github.github.com/gfm/>`_.
 
-Sample description
+Sample description:
 
 ::
 
@@ -86,31 +61,27 @@ Sample description
     For more information please access [external page](https://external/page)
     (If there is any external source with more information, link it here)
 
-The process queries UniProt's SPARQL endpoint to retrieve annotations for the loci 
-in the schema. The user that uploads the schema can provide a TSV file with annotations for some or all 
-loci in the schema. The file with annotations must have the following structure:
+The process queries UniProt's SPARQL endpoint to retrieve annotations for the loci in the schema. The user that uploads the schema can provide a TSV file with annotations for some or all  loci in the schema. The file with annotations must have the following structure:
 
-- First column: locus identifier (name of locus file without ``.fasta`` extension).
-- Second column: user annotation (name commonly attributed by the user).
-- Third column: custom annotation (another term that the user might want to attribute).
+	- First column: locus identifier (name of locus file without ``.fasta`` extension).
+	- Second column: user annotation (name commonly attributed by the user).
+	- Third column: custom annotation (another term that the user might want to attribute).
 
 However, no headers are necessary.
 
 .. rst-class:: align-center
 
-  +----------+--------------+---------------------------------------------------+
-  | locus_1  |     dnaA     |  Chromosomal replication  initiator protein DnaA  |
-  +----------+--------------+---------------------------------------------------+
-  | locus_2  |     dnaG     |                    DNA primase                    |
-  +----------+--------------+---------------------------------------------------+
-  | locus_3  |              |            RNA-directed DNA polymerase            |
-  +----------+--------------+---------------------------------------------------+
-  | locus_4  |     pbp      |                                                   |
-  +----------+--------------+---------------------------------------------------+
+	+----------+--------------+---------------------------------------------------+
+	| locus_1  |     dnaA     |  Chromosomal replication  initiator protein DnaA  |
+	+----------+--------------+---------------------------------------------------+
+	| locus_2  |     dnaG     |                    DNA primase                    |
+	+----------+--------------+---------------------------------------------------+
+	| locus_3  |              |            RNA-directed DNA polymerase            |
+	+----------+--------------+---------------------------------------------------+
+	| locus_4  |     pbp      |                                                   |
+	+----------+--------------+---------------------------------------------------+
 
-It is not necessary to provide both annotation types for each locus nor for every locus.
-If no information is provided N/A will be automatically shown in the locus details page in
-Chewie-NS.
+It is not necessary to provide both annotation types for each locus nor for every locus. If no information is provided N/A will be automatically shown in the locus details page in Chewie-NS.
 
 Basic Usage
 -----------
@@ -135,16 +106,14 @@ To upload a schema and provide a description and annotations:
 
     $ chewBBACA.py LoadSchema -i path/to/SchemaFolder -sp 9 -sn cgMLST_95 -lp cgMLST_95 --df description.txt --a annotations.tsv
 
-To continue an upload that was interrupted or that aborted, we should provide the command used in 
-the process that failed and add the ``--continue_up`` argument
+To continue an upload that was interrupted or that aborted, we should provide the command used in the process that failed and add the ``--continue_up`` argument
 
 ::
 
     $ chewBBACA.py LoadSchema -i path/to/SchemaFolder -sp 9 -sn cgMLST_95 -lp cgMLST_95 --continue_up
 
-.. important:: **If you cannot complete schema upload or if the information in the
-                 website is incorrect or missing, please contact us via e-mail:**
-                 imm-bioinfo@medicina.ulisboa.pt
+.. important::
+	If you cannot complete schema upload or if the information in the website is incorrect or missing, please contact us via e-mail: imm-bioinfo@medicina.ulisboa.pt
 
 Parameters
 ----------
@@ -190,3 +159,23 @@ Workflow of the LoadSchema module
 .. image:: /_static/images/LoadSchema.png
    :width: 1200px
    :align: center
+
+The LoadSchema module uploads local schemas to Chewie-NS. Brief description of the workflow:
+
+- The process starts by requesting the user credentials to ensure that the user has contributor privileges. Only contributors are allowed to upload schemas to Chewie-NS.
+
+- If the user is a contributor, the process checks if the species identifier provided by the user is valid and if the species is listed in Chewie-NS.
+
+- After this step, the process reads the schema’s configuration file to validate the schema parameter values and ensure that there is only a single value associated with each parameter. The initial validation steps are followed by the upload of the schema data to Chewie-NS.
+
+- The process reads the schema description, if the user provided one, or uses the schema name as description.
+
+- The alleles are translated and annotation terms for the loci are obtained through UniProt’s SPARQL endpoint. If the user provides custom loci annotations, the process reads the file provided by the user and adds the custom annotations to the loci annotation data to send to Chewie-NS.
+
+- After retrieving loci annotations, the process creates the schema in Chewie-NS by sending the schema’s parameter values and the list of file hashes to validate schema files uploaded in subsequent steps.
+
+- The loci are created and linked to the newly created schema by sending the loci identifiers and annotations to Chewie-NS.
+
+- The loci FASTA files are compressed and uploaded to Chewie-NS to add the allele sequences to the database and link them to the corresponding loci.
+
+- The last step in the process uploads the training file in the local schema and associates it to the newly created schema in Chewie-NS. After process completion, Chewie-NS will process the data that was sent to make the schema data and statistics available through the website and the API.

@@ -24,9 +24,7 @@ Parameters
                       all files. (default: False).
 
 .. important::
-	It is necessary to pass the ``--common`` argument if the input files do not have the same
-	set of loci (this option creates a new file only with the set of loci shared between all
-	input files).
+	It is necessary to pass the ``--common`` argument if the input files do not have the same set of loci (this option creates a new file only with the set of loci shared between all input files).
 
 Outputs
 -------

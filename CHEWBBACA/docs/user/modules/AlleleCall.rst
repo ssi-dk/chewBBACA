@@ -269,30 +269,12 @@ The AlleleCall module determines the allelic profiles for strains of interest. B
 Identify genetic clusters
 :::::::::::::::::::::::::
 
-We recommend that you use `ReporTree <https://github.com/insapathogenomics/ReporTree>`_ to identify genetic clusters
-based on the allelic profiles (contained in the ``results_alleles.tsv`` output file) determined by chewBBACA. ReporTree
-includes functionalities to identify genetic clusters at any distance threshold level(s), obtain summary reports with relevant
-statistics computed based on sample metadata, identify regions of cluster stability, etc. Cluster nomenclature can be maintained
-and updated in subsequent analyses, which is especially useful in surveillance-oriented workflows. Check the
-`publication <https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-023-01196-1>`_ and the
-`GitHub repository <https://github.com/insapathogenomics/ReporTree>`_ to know more about ReporTree.
+We recommend that you use `ReporTree <https://github.com/insapathogenomics/ReporTree>`_ to identify genetic clusters based on the allelic profiles (contained in the ``results_alleles.tsv`` output file) determined by chewBBACA. ReporTree includes functionalities to identify genetic clusters at any distance threshold level(s), obtain summary reports with relevant statistics computed based on sample metadata, identify regions of cluster stability, etc. Cluster nomenclature can be maintained and updated in subsequent analyses, which is especially useful in surveillance-oriented workflows. Check the `publication <https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-023-01196-1>`_ and the `GitHub repository <https://github.com/insapathogenomics/ReporTree>`_ to know more about ReporTree.
 
 Concurrent allele calling
 :::::::::::::::::::::::::
 
-In its default mode, mode 4, and in the execution modes 2 and 3, the AlleleCall module updates the schema with the
-novel alleles inferred during the allele calling. This is incompatible with concurrent access to the same schema.
-If you run chewBBACA in an environment with multiple processes/users accessing the same schema, please use the
-``--no-inferred`` parameter. By providing this parameter, chewBBACA will still identify novel alleles but will not
-update the schema files with the information about those novel alleles. **When you create a new schema, adapt an external
-schema or download a schema from Chewie-NS, you must perform a single allele calling before using the schema for
-concurrent allele calling**. You can use a single genome assembly; it's only essential to generate the pre-computed data
-that chewBBACA uses to speed up the allele calling. After that, multiple users can concurrently perform allele calling
-based on the same schema if they pass the ``--no-inferred`` parameter. chewBBACA will still identify novel alleles and
-include them in the final results, but those alleles will not be added to the schema, and the pre-computed files will
-not be updated. If you ever want to add new alleles to the schema, you'll have to perform allele calling without the
-``--no-inferred`` parameter and ensure that there's only one process working with the schema while it is updated.
+In its default mode, mode 4, and in the execution modes 2 and 3, the AlleleCall module updates the schema with the novel alleles inferred during the allele calling. This is incompatible with concurrent access to the same schema. If you run chewBBACA in an environment with multiple processes/users accessing the same schema, please use the ``--no-inferred`` parameter. By providing this parameter, chewBBACA will still identify novel alleles but will not update the schema files with the information about those novel alleles. **When you create a new schema, adapt an external schema or download a schema from Chewie-NS, you must perform a single allele calling before using the schema for concurrent allele calling**. You can use a single genome assembly; it's only essential to generate the pre-computed data that chewBBACA uses to speed up the allele calling. After that, multiple users can concurrently perform allele calling based on the same schema if they pass the ``--no-inferred`` parameter. chewBBACA will still identify novel alleles and include them in the final results, but those alleles will not be added to the schema, and the pre-computed files will not be updated. If you ever want to add new alleles to the schema, you'll have to perform allele calling without the ``--no-inferred`` parameter and ensure that there's only one process working with the schema while it is updated.
 
 .. warning::
-	The schema will most likely become corrupted and unusable if you attempt to run multiple concurrent processes
-	with the same schema without providing the ``--no-inferred`` parameter.
+	The schema will most likely become corrupted and unusable if you attempt to run multiple concurrent processes with the same schema without providing the ``--no-inferred`` parameter.

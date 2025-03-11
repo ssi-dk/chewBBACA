@@ -4,7 +4,7 @@ FAQ
 What strains should I use for :doc:`Schema Creation </user/modules/CreateSchema>`?
 ..................................................................................
 The set of genome assemblies used for schema creation should be carefully selected to avoid
-the inclusion of spurious loci in the schema seed that result from low quality assemblies
+the inclusion of spurious loci in the schema seed that result from low quality genome assemblies
 (e.g.: genome assemblies resulting from low quality sequencing data, highly fragmented genome
 assemblies, genome assemblies with many frameshifted proteins, genome length too large or too
 small). A set of high quality genome assemblies, ideally complete genomes, that capture the
@@ -23,7 +23,7 @@ chewBBACA accepts input files with the following file extensions: ``.fasta``, ``
 
 I ran all the steps and my cgMLST loci size is smaller than traditional MLST...does this even work?
 ...................................................................................................
-In order to have a robust definition of a cgMLST schema for a given bacterial species, a set
+In order to have a robust definition of a cgMLST schema, a set
 of representative strains of the diversity of a given species should be selected. Furthermore,
 since cgMLST schema definition is based on pre-defined thresholds, only when a sufficient number
 of strains have been analyzed can the cgMLST schema be considered stable. This number will always
@@ -100,8 +100,10 @@ At the moment:
 - *Enterococcus faecium*
 - *Escherichia coli*
 - *Haemophilus influenzae*
+- *Klebsiella pneumoniae*
 - *Legionella pneumophila*
 - *Listeria monocytogenes*
+- *Pseudomonas aeruginosa*
 - *Salmonella enterica enteritidis*
 - *Staphylococcus aureus*
 - *Staphylococcus haemolyticus*
@@ -117,15 +119,17 @@ get them `here <https://github.com/B-UMMI/chewBBACA/tree/master/CHEWBBACA/prodig
 
 My favorite species has no training file. What can I do?
 ........................................................
-You can propose a new one to be added to the repository or create your own training files.
-To create a training file make sure you have Prodigal installed and run the following command:
+You can propose a new one to be added to the repository or create your own.
+To create a training file make sure you have Prodigal installed and adapt the following command:
 
 ::
 
 	prodigal -i myGoldStandardGenome.fna -t myTrainedFile.trn -p single
 
+The `Prodigal wiki <https://github.com/hyattpd/prodigal/wiki/Gene-Prediction-Modes#training-mode>`_
+includes more detailed information about how to create a training file.
+
 How should I cite chewBBACA?
 ............................
-If you use chewBBACA, please cite:
 
-Silva M, Machado MP, Silva DN, Rossi M, Moran-Gilad J, Santos S, Ramirez M, Carriço JA. 2018. chewBBACA: A complete suite for gene-by-gene schema creation and strain identification. Microb Genom 4:000166. doi:10.1099/mgen.0.000166
+Please refer to the Citation section in the :doc:`Overview </user/getting_started/overview>` page.

@@ -12,8 +12,7 @@ Important Notes
 - chewBBACA defines an allele as a complete Coding DNA Sequence (CDS), with start and stop codons
   according to the `NCBI genetic code table 11 <http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi>`_
   (identified using `Prodigal <https://github.com/hyattpd/prodigal/releases/>`_ for chewBBACA<=3.2.0 and
-  `Pyrodigal <https://github.com/althonos/pyrodigal>`_ for chewBBACA>=3.3.0, but with the option to provide FASTA
-  files with CDSs). It will automatically exclude any allele for which the DNA sequence does not contain start or stop
+  `Pyrodigal <https://github.com/althonos/pyrodigal>`_ for chewBBACA>=3.3.0). It will automatically exclude any allele for which the DNA sequence does not contain start or stop
   codons and for which the length is not multiple of three. Alleles that contain ambiguous bases are also excluded.
 - Make sure that your FASTA files are UNIX format. If they were created in Linux or MacOS
   systems they should be in the correct format, but if they were created in Windows systems,

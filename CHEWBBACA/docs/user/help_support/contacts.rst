@@ -2,10 +2,8 @@ Contacts
 ========
 
 chewBBACA is developed by the `Molecular Microbiology and Infection Unit (UMMI) 
-<http://im.fm.ul.pt>`_ at the 
-`Instituto de Medicina Molecular João Lobo Antunes 
-<https://imm.medicina.ulisboa.pt/>`_ and `Faculdade de Medicina, Universidade de Lisboa 
-<https://www.medicina.ulisboa.pt/>`_.
+<http://im.fm.ul.pt>`_ at the `Lisbon School of Medicine, University of Lisbon 
+<https://www.medicina.ulisboa.pt/en>`_.
 
-For any issues contact the development team at imm-bioinfo@medicina.ulisboa.pt or 
-open an issue at the chewBBACA Github `repository <https://github.com/B-UMMI/chewBBACA>`_.
+For any requests or to report issues contact the development team at imm-bioinfo@medicina.ulisboa.pt or 
+open an `issue <https://github.com/B-UMMI/chewBBACA/issues>`_ on Github.

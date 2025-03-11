@@ -5,8 +5,6 @@ Useful links
   Chewie-NS allows chewBBACA users to download and update cg/wgMLST schemas,
   allowing the easy sharing of results, while ensuring the reproducibility and
   consistency of these steps.
-- Use `BBACA gitter <https://gitter.im/BBACA/Lobby>`_ if you have any pressing
-  question. Chat can be faster and better than email for troubleshooting purposes.
 - A ready to use `docker image <https://hub.docker.com/r/ummidock/chewbbaca>`_
   automatically built from the latest version of chewBBACA in Ubuntu 22.04.
 - chewBBACA is available as a `Galaxy module <https://toolshed.g2.bx.psu.edu/repository?repository_id=88fd7663075eeae9&changeset_revision=093352878303>`_.

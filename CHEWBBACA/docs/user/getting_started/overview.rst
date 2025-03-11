@@ -25,8 +25,8 @@ The main processes available in chewBBACA are represented in the following workf
 - Steps labelled 1: Schema creation from genome assemblies or coding sequences in FASTA format.
 - Steps labelled 2: Adaptation of external schemas for usage with chewBBACA.
 - Steps labelled 3: Upload, download, and synchronize schemas from `Chewie-NS <https://chewbbaca.online/>`_.
-- Steps labelled 4: Perform allele calling to determine allelic profiles.
-- Steps labelled 5: Compute the core genome based on allele calling results.
+- Steps labelled 4: Perform allele calling to determine the allelic profiles of strains of interest.
+- Steps labelled 5: Determine the set of loci that constitute the core genome based on allele calling results.
 - Steps labelled 6: Annotate schema loci based on UniProt data.
 - Steps labelled 7: Evaluate schemas and explore loci diversity through an interactive report.
 - Steps labelled 8: Evaluate allele calling results through an interactive report.

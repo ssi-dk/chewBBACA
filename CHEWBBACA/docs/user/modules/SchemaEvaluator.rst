@@ -1,12 +1,7 @@
 SchemaEvaluator - Build an interactive report for schema evaluation
 ===================================================================
 
-The SchemaEvaluator module allows users to generate an interactive HTML report to better explore
-the structure and evaluate typing schemas. The report includes data tables and charts with detailed
-information about the allele size variation and allele integrity for each locus in the schema. The module
-can be used to analyse schemas created with chewBBACA and external schemas from platforms such as
-`Ridom cgMLST <http://www.cgmlst.org/ncs>`_, `BIGSdb <https://pubmlst.org/>`_,
-`BIGSdb-Pasteur <https://bigsdb.pasteur.fr/>`_ and `Enterobase <http://enterobase.warwick.ac.uk/>`_.
+The SchemaEvaluator module allows users to generate an interactive HTML report to better explore the structure and evaluate typing schemas. The report includes data tables and charts with detailed information about the allele size variation and allele integrity for each locus in the schema. The module can be used to analyse schemas created with chewBBACA and external schemas from platforms such as `Ridom cgMLST <http://www.cgmlst.org/ncs>`_, `BIGSdb <https://pubmlst.org/>`_, `BIGSdb-Pasteur <https://bigsdb.pasteur.fr/>`_ and `Enterobase <http://enterobase.warwick.ac.uk/>`_.
 
 Basic Usage
 :::::::::::
@@ -73,63 +68,46 @@ Outputs
 
 - A HTML report, ``schema_report.html``, that contains the following components:
 
-  - A table with summary data about the schema.
-  - A tab panel with charts for the distribution of the number of alleles and allele size per locus.
-  - If a TSV file with annotations is provided to the ``--annotations`` parameter, the schema report
-    will also include a table with the provided annotations. Otherwise, it will display a warning informing that
-    no annotations were provided.
-  - A table with the results of the allele integrity and diversity analysis per locus.
+	- A table with summary data about the schema.
+	- A tab panel with charts for the distribution of the number of alleles and allele size per locus.
+	- If a TSV file with annotations is provided to the ``--annotations`` parameter, the schema report will also include a table with the provided annotations. Otherwise, it will display a warning informing that no annotations were provided.
+	- A table with the results of the allele integrity and diversity analysis per locus.
 
 - A HTML report per locus that contains the following components:
 
-  - A table with summary data about the locus.
-  - A table with the locus annotations, if the user provided annotations for the locus. Otherwise, it will
-    display a warning informing that no annotations were provided.
-  - A tab panel with charts for the locus allele diversity.
-  - A table with the total number and list of alleles that encode each distinct protein.
-  - A table with the list of alleles that are not complete coding sequences and/or that are
-    considered size outliers based on the minimum length and size threshold values used for
-    schema evaluation.
-  - A MSA component with the alignment for the distinct proteins.
-  - A tree drawn with Phylocanvas based on the guide tree created by MAFFT.
-  - If the ``--add-sequences`` parameter is provided, the locus report will also include a
-    code editor with the allele DNA sequences and a code editor with the distinct protein
-    sequences.
+	- A table with summary data about the locus.
+	- A table with the locus annotations, if the user provided annotations for the locus. Otherwise, it will display a warning informing that no annotations were provided.
+	- A tab panel with charts for the locus allele diversity.
+	- A table with the total number and list of alleles that encode each distinct protein.
+	- A table with the list of alleles that are not complete coding sequences and/or that are considered size outliers based on the minimum length and size threshold values used for schema evaluation.
+	- A MSA component with the alignment for the distinct proteins computed with `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_.
+	- A tree drawn with Phylocanvas based on the guide tree created by MAFFT.
+	- If the ``--add-sequences`` parameter is provided, the locus report will also include code editor components with the allele DNA sequences and the distinct protein sequences.
 
-- Two JavaScript bundle files. The ``schema_bundle.js`` file is used by the schema report, and the
-  ``loci_bundle.js`` file, located inside the ``loci_reports`` folder, is used by the loci reports.
-
-.. note::
-  You need to provide the ``--loci-reports`` parameter if you want a detailed report per locus.
-  Running the SchemaEvaluator module with its default parameter values will only generate the Schema
-  Report.
+- Two JavaScript bundle files. The ``schema_bundle.js`` file is used by the schema report, and the ``loci_bundle.js`` file, located inside the ``loci_reports`` folder, is used by the loci reports.
 
 .. warning::
-  The JS bundles are necessary to visualize the HTML reports. Do not delete these files. You should
-  not move or delete any of the files in the output folder.
+  The JS bundles are necessary to visualize the HTML reports. Do not delete these files. You should not move or delete any of the files in the output folder.
 
 .. note::
-  If you want to share the report, simply compress the output folder and share the compressed archive.
-  The receiver can simply uncompress the archive and open the HTML files with a browser to visualize the report.
+  You need to provide the ``--loci-reports`` parameter if you want a detailed report per locus. Running the SchemaEvaluator module with its default parameter values will only generate the Schema Report.
 
 .. note::
-  Several report components only display the allele integer identifiers (the integer after the ``_`` in the
-  sequence headers, e.g.: ``17`` is the allele integer identifier in ``YPO1106_17``). This integer value
-  is enough to identify each allele and also simplifies data display because it is short.
+  If you want to share the report, simply compress the output folder and share the compressed archive. The receiver can simply uncompress the archive and open the HTML files with a browser to visualize the report.
+
+.. note::
+  Several report components only display the allele integer identifiers (the integer after the ``_`` in the sequence headers, e.g.: ``17`` is the allele integer identifier in ``YPO1106_17``). This integer value is enough to identify each allele and also simplifies data display because it is short.
 
 Schema Report Components
 ------------------------
 
-The first component gives a small introduction that details the type of information contained in
-each component of the schema report.
+The first component gives a small introduction that details the type of information contained in each component of the schema report.
 
 .. image:: /_static/images/schema_report_description.png
    :width: 1400px
    :align: center
 
-The two alerts on top of the expandable component provide information about the parameter values
-used to create and evaluate the schema, respectively. The SchemaEvaluator can only determine the
-parameter values used for schema creation if the schema was created with chewBBACA.
+The two alerts on top of the expandable component provide information about the parameter values used to create and evaluate the schema, respectively. The SchemaEvaluator can only determine the parameter values used for schema creation if the schema was created with chewBBACA.
 
 Schema Summary Data
 ...................
@@ -138,20 +116,15 @@ The second component is a table with summary statistics about the schema, such a
 
   - **Loci**: Total number of loci that were evaluated.
   - **Alleles**: Total number of alleles.
-  - **Valid Alleles**: Total number of valid alleles. An allele is considered valid if its sequence size is a multiple
-    of 3, if it has a single start and stop codon, if has no in-frame stop codons, and if it contains no ambiguous bases.
-  - **Invalid Alleles**: Total number of invalid alleles. The value in this column is the sum of the values in the ``Incomplete ORF``,
-    ``Ambiguous Bases``, ``Missing Start/Stop Codon`` and ``In-frame Stop Codon`` columns.
+  - **Valid Alleles**: Total number of valid alleles. An allele is considered valid if its sequence size is a multiple of 3, if it has a single start and stop codon, if has no in-frame stop codons, and if it contains no ambiguous bases.
+  - **Invalid Alleles**: Total number of invalid alleles. The value in this column is the sum of the values in the ``Incomplete ORF``, ``Ambiguous Bases``, ``Missing Start/Stop Codon`` and ``In-frame Stop Codon`` columns.
   - **Incomplete ORF**: Total number of incomplete alleles (sequence size not multiple of 3).
   - **Ambiguous Bases**: Total number of alleles that contain ambiguous bases (non-ACTG characters).
   - **Missing Start/Stop Codon**: Total number of alleles missing the Start and/or Stop codons.
   - **In-frame Stop Codon**: Total number of alleles with in-frame stop codons.
-  - **Alleles <bp**: Total number of alleles shorter than ``--ml``, the minimum sequence length value used
-    for schema evaluation (in number of nucleotides).
-  - **Alleles below threshold**: Total number of alleles below the locus sequence size bot threshold. This threshold identifies
-    alleles with a sequence size that is -20% of the allele size mode.
-  - **Alleles above threshold**: Total number of alleles above the locus sequence size top threshold. This threshold identifies
-    alleles with a sequence size that is +20% of the allele size mode.
+  - **Alleles <bp**: Total number of alleles shorter than ``--ml``, the minimum sequence length value used for schema evaluation (in number of nucleotides).
+  - **Alleles below threshold**: Total number of alleles below the locus sequence size bot threshold. This threshold identifies alleles with a sequence size that is -20% of the allele size mode.
+  - **Alleles above threshold**: Total number of alleles above the locus sequence size top threshold. This threshold identifies alleles with a sequence size that is +20% of the allele size mode.
 
 .. image:: /_static/images/schema_report_summary.png
    :width: 1400px
@@ -160,8 +133,7 @@ The second component is a table with summary statistics about the schema, such a
 Loci Statistics
 ...............
 
-The third component contains 4 panels with charts displaying relevant information about
-the distribution of the number of alleles and allele size variation per evaluated locus.
+The third component contains 4 panels with charts displaying relevant information about the distribution of the number of alleles and allele size variation per evaluated locus.
 
 - Panel A, ``Total Alleles``, displays the distribution of loci by number of alleles.
 
@@ -175,65 +147,48 @@ the distribution of the number of alleles and allele size variation per evaluate
    :width: 1400px
    :align: center
 
-- Panel C, ``Locus Statistics``, displays a scatter chart with points for the minimum allele size (blue), maximum allele
-  size (orange) and median allele size (green) per locus.
+- Panel C, ``Locus Statistics``, displays a scatter chart with points for the minimum allele size (blue), maximum allele size (orange) and median allele size (green) per locus.
 
 .. image:: /_static/images/schema_report_panelC.png
    :width: 1400px
    :align: center
 
-- Panel D, ``Allele Size Variation``, displays box plots for the locus size distribution. The range slider
-  beneath the xaxis line can be used to redefine the boxplots that are visible in the plot area.
+- Panel D, ``Allele Size Variation``, displays box plots for the locus size distribution. The range slider beneath the xaxis line can be used to redefine the boxplots that are visible in the plot area.
 
 .. image:: /_static/images/schema_report_panelD.png
    :width: 1400px
    :align: center
 
 .. note::
-  If you have provided the ``--loci-reports`` parameter, the points in Panel C and the
-  boxplots in Panel D are clickable and will open the detailed report of the selected locus.
+  If the ``--loci-reports`` parameter is provided, the points in Panel C and the boxplots in Panel D are clickable and will open the detailed report of the selected locus.
 
 Loci annotations
 ................
 
-If a TSV file with loci annotations is provided, the fourth component of the schema report is a table
-with the list of annotations. Otherwise, it will display a warning informing that no annotations
-were provided.
+If a TSV file with loci annotations is provided, the fourth component of the schema report is a table with the list of annotations. Otherwise, it will display a warning informing that no annotations were provided.
 
 .. image:: /_static/images/schema_report_annotations.png
    :width: 1400px
    :align: center
 
-If you have provided the ``--loci-reports`` parameter, the loci identifiers in the first column will
-link to the loci report pages. If a column name includes ``URL``, the SchemaEvaluator module assumes
-that the values in that column are URLs and creates links to the web pages.
+If the ``--loci-reports`` parameter is provided, the loci identifiers in the first column will link to the loci report pages. If a column name includes ``URL``, the SchemaEvaluator module assumes that the values in that column are URLs and creates links to the web pages.
 
 .. important::
-  The first column in the TSV file with annotations must be named ``Locus`` and contain the identifiers
-  of the loci (the basename of the locus FASTA file without the ``.fasta`` extension).
+  The first column in the TSV file with annotations must be named ``Locus`` and contain the identifiers of the loci (the basename of the locus FASTA file without the ``.fasta`` extension).
 
-You can use the :doc:`UniprotFinder </user/modules/UniprotFinder>` module to annotate the loci in a schema
-created with chewBBACA. If you want to annotate an external schema, you can adapt it with the
-:doc:`PrepExternalSchema </user/modules/PrepExternalSchema>` module followed by annotation with the
-:doc:`UniprotFinder </user/modules/UniprotFinder>` module.
+You can use the :doc:`UniprotFinder </user/modules/UniprotFinder>` module to annotate the loci in a schema created with chewBBACA. If you want to annotate an external schema, you can adapt it with the :doc:`PrepExternalSchema </user/modules/PrepExternalSchema>` module followed by annotation with the :doc:`UniprotFinder </user/modules/UniprotFinder>` module.
 
 Allele Analysis
 ...............
 
-The final component of the schema report presents a table with the results of the allele integrity and
-diversity analysis per locus. The table includes values per locus for most column categories in the
-``Schema Summary Data`` table. It also includes the following additional columns:
+The final component of the schema report presents a table with the results of the allele integrity and diversity analysis per locus. The table includes values per locus for most column categories in the ``Schema Summary Data`` table. It also includes the following additional columns:
 
-  - **Proportion of Validated Alleles**: the proportion of the total alleles in the locus FASTA file that
-    were considered valid.
-  - **Distinct Protein Alleles**: the number of distinct protein alleles encoded by all alleles.
-  - **Missing Allele IDs**: the number of allele identifiers that are missing, assuming that allele identifiers
-    in the FASTA file should be sequential.
+	- **Proportion of Validated Alleles**: the proportion of the total alleles in the locus FASTA file that were considered valid.
+	- **Distinct Protein Alleles**: the number of distinct protein alleles encoded by all alleles.
+	- **Missing Allele IDs**: the number of allele identifiers that are missing, assuming that allele identifiers in the FASTA file should be sequential.
 
 .. important::
-	In order to identify the *Missing Allele IDs*, the module expects the headers of the input
-	FASTA files to have the locus identifier followed by the allele integer identifier
-	(e.g.: >lmo_1) or simply the allele integer identifier (e.g.: >1).
+	In order to identify the *Missing Allele IDs*, the module expects the headers of the input FASTA files to have the locus identifier followed by the allele integer identifier (e.g.: >lmo_1) or simply the allele integer identifier (e.g.: >1).
 
 .. image:: /_static/images/schema_report_allele_analysis.png
    :width: 1400px
@@ -242,8 +197,7 @@ diversity analysis per locus. The table includes values per locus for most colum
 Locus Report Components
 -----------------------
 
-The first component gives a small introduction that details the type of information contained in
-the locus report.
+The first component gives a small introduction that details the type of information contained in the locus report.
 
 .. image:: /_static/images/loci_reports_description.png
    :width: 1400px
@@ -252,12 +206,11 @@ the locus report.
 Locus Summary Data
 ..................
 
-The second component is a table that includes the values for the locus presented in the ``Allele Analysis``
-table of the schema report and also includes the following additional values:
+The second component is a table that includes the values for the locus presented in the ``Allele Analysis`` table of the schema report and also includes the following additional values:
 
-- **Size Range (bp)**: the allele size range (minimum-maximum).
-- **Length Median (bp)**: the allele median size.
-- **Length Mode (bp)**: the allele mode size.
+	- **Size Range (bp)**: the allele size range (minimum-maximum).
+	- **Length Median (bp)**: the allele median size.
+	- **Length Mode (bp)**: the allele mode size.
 
 .. image:: /_static/images/loci_reports_summary.png
    :width: 1400px
@@ -266,8 +219,7 @@ table of the schema report and also includes the following additional values:
 Locus Annotation Data
 .....................
 
-The third component is a table with the annotations provided for the locus. An alert will be displayed if there
-are no annotations for the locus.
+The third component is a table with the annotations provided for the locus. An alert will be displayed if there are no annotations for the locus.
 
 .. image:: /_static/images/loci_reports_annotations.png
    :width: 1400px
@@ -276,11 +228,9 @@ are no annotations for the locus.
 Locus Size Plots
 ................
 
-The fourth component contains 3 panels with charts displaying relevant information about the distribution
-of allele sizes, the sequence size per allele and the diversity of distinct proteins.
+The fourth component contains 3 panels with charts displaying relevant information about the distribution of allele sizes, the sequence size per allele and the diversity of distinct proteins.
 
-- Panel A, ``Allele Size Counts``, display a histogram summarizing the size distribution of the alleles (frequency
-  of binned sizes).
+- Panel A, ``Allele Size Counts``, display a histogram summarizing the size distribution of the alleles (frequency of binned sizes).
 
 .. image:: /_static/images/loci_reports_allele_size_counts.png
    :width: 1400px
@@ -298,24 +248,19 @@ of allele sizes, the sequence size per allele and the diversity of distinct prot
 .. note::
 	The points corresponding to valid and invalid alleles are colored in blue and grey, respectively.
 
-- Panel C, ``Alleles Per Protein``, displays a bar chart with the number of distinct alleles that encode each
-  distinct protein.
+- Panel C, ``Alleles Per Protein``, displays a bar chart with the number of distinct alleles that encode each distinct protein.
 
 .. image:: /_static/images/loci_reports_protein_alleles.png
    :width: 1400px
    :align: center
 
 .. note::
-   In Panels A and B, the ``Show Thresholds`` switch can be toggled to adjust the axes limits to show the
-   bot and top allele size thresholds (with the default parameter values, the thresholds are defined based
-   on a -/+20% size variation from the allele size mode).
+   In Panels A and B, the ``Show Thresholds`` switch can be toggled to adjust the axes limits to show the bot and top allele size thresholds (with the default parameter values, the thresholds are defined based on a -/+20% size variation from the allele size mode).
 
 Distinct Protein Alleles
 ........................
 
-The fifth component presents a table with the list of distinct protein alleles and the list of
-distinct alleles that encode for each protein allele. The identifiers of the protein alleles
-are selected based on the first distinct allele that encodes for the protein.
+The fifth component presents a table with the list of distinct protein alleles and the list of distinct alleles that encode for each protein allele. The identifiers of the protein alleles are selected based on the first distinct allele that encodes for the protein.
 
 .. image:: /_static/images/loci_reports_protein_table.png
    :width: 1400px
@@ -324,10 +269,7 @@ are selected based on the first distinct allele that encodes for the protein.
 Invalid Alleles and Size Outliers
 .................................
 
-The sixth component presents a table with the list of alleles that are invalid and/or that are considered size
-outliers based on the minimum length and size threshold values used for schema evaluation. The ``Exception Category``
-is defined based on the first exception captured for each allele. The list of all exceptions captured for each allele
-is displayed in the ``Exception Description`` column.
+The sixth component presents a table with the list of alleles that are invalid and/or that are considered size outliers based on the minimum length and size threshold values used for schema evaluation. The ``Exception Category`` is defined based on the first exception captured for each allele. The list of all exceptions captured for each allele is displayed in the ``Exception Description`` column.
 
 .. image:: /_static/images/loci_reports_invalid_alleles.png
    :width: 1400px
@@ -336,9 +278,7 @@ is displayed in the ``Exception Description`` column.
 Multiple Sequence Alignment
 ...........................
 
-The seventh component of the locus report presents the protein multiple sequence alignment (MSA) produced by
-`MAFFT <https://mafft.cbrc.jp/alignment/software/>`_ (with options ``--retree 1`` and ``--maxiterate 0``).
-The MSA only includes the distinct proteins encoded by the valid alleles.
+The seventh component of the locus report presents the protein multiple sequence alignment (MSA) produced by `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_ (with options ``--retree 1`` and ``--maxiterate 0``). The MSA only includes the distinct proteins encoded by the valid alleles.
 
 .. image:: /_static/images/loci_reports_msa.png
    :width: 1400px
@@ -347,9 +287,7 @@ The MSA only includes the distinct proteins encoded by the valid alleles.
 Neighbor-Joining Tree
 .....................
 
-The eighth component displays the guide tree created by `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_.
-The tree visualization is produced using `Phylocanvas.gl <https://www.npmjs.com/package/@phylocanvas/phylocanvas.gl>`_.
-The tree nodes are labeled with the identifiers attributed to the distinct proteins.
+The eighth component displays the guide tree created by `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_. The tree visualization is produced using `Phylocanvas.gl <https://www.npmjs.com/package/@phylocanvas/phylocanvas.gl>`_. The tree nodes are labeled with the identifiers attributed to the distinct proteins.
 
 .. image:: /_static/images/loci_reports_nj.png
    :width: 1400px
@@ -358,10 +296,7 @@ The tree nodes are labeled with the identifiers attributed to the distinct prote
 DNA sequences and Protein sequences
 ...................................
 
-If the ``--add-sequences`` parameter was provided, the report will include two Monaco Code Editor components to display
-sequences in FASTA format. The ``DNA sequences`` component displays all the alleles included in the locus FASTA file.
-The ``Protein sequences`` component displays the protein sequences for all alleles that were considered valid. The
-code editor is in readonly mode (possible to copy and search but not to edit the contents).
+If the ``--add-sequences`` parameter was provided, the report will include two Monaco Code Editor components to display sequences in FASTA format. The ``DNA sequences`` component displays all the alleles included in the locus FASTA file. The ``Protein sequences`` component displays the protein sequences for all alleles that were considered valid. The code editor is in readonly mode (possible to copy and search but not to edit the contents).
 
 .. image:: /_static/images/loci_reports_dna_editor.png
    :width: 1400px
@@ -377,3 +312,15 @@ Workflow of the SchemaEvaluator module
 .. image:: /_static/images/SchemaEvaluator.png
    :width: 1000px
    :align: center
+
+The SchemaEvaluator module analyses a schema to create a report that allows users to explore schema structure and loci diversity interactively. Brief description of the workflow:
+
+- The process starts by computing schema statistics, such as the number of loci and alleles, and loci statistics, such as the number of alleles, allele size statistics, and the number of valid and invalid alleles (e.g. alleles that cannot be translated due to being incomplete, containing ambiguous bases, in-frame stop codons, etc.). The schema and loci statistics are included in interactive data tables and charts on the main page of the HTML report.
+
+- Loci annotations are imported and included in the main page of the report if provided.
+
+- If the ``--loci-reports`` option is provided, the process performs a detailed analysis of each locus to add a separate locus page to the HTML report for each locus. Loci data is analyzed in greater detail to get more detailed statistics per locus.
+
+- If the ``--add-sequences`` option is provided, the allele DNA sequences are imported and translated to add DNA and protein sequences to code editors on the locus page, which facilitates identifying and manipulating alleles of interest.
+
+- Additionally, the process computes a multiple sequence alignment (MSA) for each locus at the protein level with MAFFT to display the MSA and MAFFT's guide tree on interactive components. The MSA and guide tree are not displayed if the ``--light`` option is provided.

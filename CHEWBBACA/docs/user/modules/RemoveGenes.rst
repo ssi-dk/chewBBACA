@@ -25,5 +25,4 @@ Parameters
 Outputs
 -------
 
-The process creates a TSV file without the columns matching the genes in the input genes list or
-only with the columns matching those genes if the ``--inverse`` parameter was provided.
+The process creates a TSV file without the columns matching the genes in the input genes list or only with the columns matching those genes if the ``--inverse`` parameter was provided.

@@ -162,20 +162,20 @@ Workflow of the LoadSchema module
 
 The LoadSchema module uploads local schemas to Chewie-NS. Brief description of the workflow:
 
-- The process starts by requesting the user credentials to ensure that the user has contributor privileges. Only contributors are allowed to upload schemas to Chewie-NS.
+	- The process starts by requesting the user credentials to ensure that the user has contributor privileges. Only contributors are allowed to upload schemas to Chewie-NS.
 
-- If the user is a contributor, the process checks if the species identifier provided by the user is valid and if the species is listed in Chewie-NS.
+	- If the user is a contributor, the process checks if the species identifier provided by the user is valid and if the species is listed in Chewie-NS.
 
-- After this step, the process reads the schema’s configuration file to validate the schema parameter values and ensure that there is only a single value associated with each parameter. The initial validation steps are followed by the upload of the schema data to Chewie-NS.
+	- After this step, the process reads the schema’s configuration file to validate the schema parameter values and ensure that there is only a single value associated with each parameter. The initial validation steps are followed by the upload of the schema data to Chewie-NS.
 
-- The process reads the schema description, if the user provided one, or uses the schema name as description.
+	- The process reads the schema description, if the user provided one, or uses the schema name as description.
 
-- The alleles are translated and annotation terms for the loci are obtained through UniProt’s SPARQL endpoint. If the user provides custom loci annotations, the process reads the file provided by the user and adds the custom annotations to the loci annotation data to send to Chewie-NS.
+	- The alleles are translated and annotation terms for the loci are obtained through UniProt’s SPARQL endpoint. If the user provides custom loci annotations, the process reads the file provided by the user and adds the custom annotations to the loci annotation data to send to Chewie-NS.
 
-- After retrieving loci annotations, the process creates the schema in Chewie-NS by sending the schema’s parameter values and the list of file hashes to validate schema files uploaded in subsequent steps.
+	- After retrieving loci annotations, the process creates the schema in Chewie-NS by sending the schema’s parameter values and the list of file hashes to validate schema files uploaded in subsequent steps.
 
-- The loci are created and linked to the newly created schema by sending the loci identifiers and annotations to Chewie-NS.
+	- The loci are created and linked to the newly created schema by sending the loci identifiers and annotations to Chewie-NS.
 
-- The loci FASTA files are compressed and uploaded to Chewie-NS to add the allele sequences to the database and link them to the corresponding loci.
+	- The loci FASTA files are compressed and uploaded to Chewie-NS to add the allele sequences to the database and link them to the corresponding loci.
 
-- The last step in the process uploads the training file in the local schema and associates it to the newly created schema in Chewie-NS. After process completion, Chewie-NS will process the data that was sent to make the schema data and statistics available through the website and the API.
+	- The last step in the process uploads the training file in the local schema and associates it to the newly created schema in Chewie-NS. After process completion, Chewie-NS will process the data that was sent to make the schema data and statistics available through the website and the API.

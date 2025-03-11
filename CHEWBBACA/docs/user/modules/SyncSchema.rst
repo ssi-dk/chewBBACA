@@ -91,18 +91,18 @@ Workflow of the SyncSchema module
 
 The SyncSchema module retrieves new alleles added to remote schemas in Chewie-NS and submits new alleles added to local schemas to update the remote schemas in Chewie-NS. Brief description of the workflow:
 
-- The process starts by reading the schema’s configuration file to get the schema’s parameter values and ensure the values match the ones listed in Chewie-NS.
+	- The process starts by reading the schema’s configuration file to get the schema’s parameter values and ensure the values match the ones listed in Chewie-NS.
 
-- If the user wants to submit new alleles identified locally (``--submit``), the process will ask for the user credentials to verify if the user has contributor privileges.
+	- If the user wants to submit new alleles identified locally (``--submit``), the process will ask for the user credentials to verify if the user has contributor privileges.
 
-- Before retrieving or uploading new alleles, the process verifies if the last modification date of the local and remote schemas match. If the dates match and the user does not want to submit new local alleles, the process exits.
+	- Before retrieving or uploading new alleles, the process verifies if the last modification date of the local and remote schemas match. If the dates match and the user does not want to submit new local alleles, the process exits.
 
-- If the dates do not match or the user wants to submit new local alleles, the process retrieves new alleles added to the remote schema since the last modification date and compares them with the alleles in the local schema.
+	- If the dates do not match or the user wants to submit new local alleles, the process retrieves new alleles added to the remote schema since the last modification date and compares them with the alleles in the local schema.
 
-- If any alleles are exclusive to the local or remote schema, the process creates updated FASTA files with all the alleles and locks the remote schema to ensure that only the current user can modify the remote schema.
+	- If any alleles are exclusive to the local or remote schema, the process creates updated FASTA files with all the alleles and locks the remote schema to ensure that only the current user can modify the remote schema.
 
-- The process creates files with the data for the new local alleles and sends them to Chewie-NS, waiting for Chewie-NS to insert the new alleles into the database.
+	- The process creates files with the data for the new local alleles and sends them to Chewie-NS, waiting for Chewie-NS to insert the new alleles into the database.
 
-- After allele insertion in Chewie-NS, the process adapts the updated FASTA files with the PrepExternalSchema module to update the local schema and ensure that the local and remote allele identifiers match.
+	- After allele insertion in Chewie-NS, the process adapts the updated FASTA files with the PrepExternalSchema module to update the local schema and ensure that the local and remote allele identifiers match.
 
-- If the schema was already locked by another user, the process will skip data upload to Chewie-NS and will update the local schema with new alleles retrieved from Chewie-NS.
+	- If the schema was already locked by another user, the process will skip data upload to Chewie-NS and will update the local schema with new alleles retrieved from Chewie-NS.

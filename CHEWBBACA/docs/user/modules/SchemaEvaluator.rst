@@ -315,12 +315,12 @@ Workflow of the SchemaEvaluator module
 
 The SchemaEvaluator module analyses a schema to create a report that allows users to explore schema structure and loci diversity interactively. Brief description of the workflow:
 
-- The process starts by computing schema statistics, such as the number of loci and alleles, and loci statistics, such as the number of alleles, allele size statistics, and the number of valid and invalid alleles (e.g. alleles that cannot be translated due to being incomplete, containing ambiguous bases, in-frame stop codons, etc.). The schema and loci statistics are included in interactive data tables and charts on the main page of the HTML report.
+	- The process starts by computing schema statistics, such as the number of loci and alleles, and loci statistics, such as the number of alleles, allele size statistics, and the number of valid and invalid alleles (e.g. alleles that cannot be translated due to being incomplete, containing ambiguous bases, in-frame stop codons, etc.). The schema and loci statistics are included in interactive data tables and charts on the main page of the HTML report.
 
-- Loci annotations are imported and included in the main page of the report if provided.
+	- Loci annotations are imported and included in the main page of the report if provided.
 
-- If the ``--loci-reports`` option is provided, the process performs a detailed analysis of each locus to add a separate locus page to the HTML report for each locus. Loci data is analyzed in greater detail to get more detailed statistics per locus.
+	- If the ``--loci-reports`` option is provided, the process performs a detailed analysis of each locus to add a separate locus page to the HTML report for each locus. Loci data is analyzed in greater detail to get more detailed statistics per locus.
 
-- If the ``--add-sequences`` option is provided, the allele DNA sequences are imported and translated to add DNA and protein sequences to code editors on the locus page, which facilitates identifying and manipulating alleles of interest.
+	- If the ``--add-sequences`` option is provided, the allele DNA sequences are imported and translated to add DNA and protein sequences to code editors on the locus page, which facilitates identifying and manipulating alleles of interest.
 
-- Additionally, the process computes a multiple sequence alignment (MSA) for each locus at the protein level with MAFFT to display the MSA and MAFFT's guide tree on interactive components. The MSA and guide tree are not displayed if the ``--light`` option is provided.
+	- Additionally, the process computes a multiple sequence alignment (MSA) for each locus at the protein level with MAFFT to display the MSA and MAFFT's guide tree on interactive components. The MSA and guide tree are not displayed if the ``--light`` option is provided.

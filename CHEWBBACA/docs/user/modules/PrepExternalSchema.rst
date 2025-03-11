@@ -64,9 +64,9 @@ Parameters
 Outputs
 -------
 
-- ``<adapted_schema>_invalid_alleles.txt`` - contains the identifiers of the alleles that were excluded and the reason for the exclusion of each allele.
-- ``<adapted_schema>_invalid_genes.txt`` - contains the list of genes that had no valid alleles, one gene identifier per line.
-- ``<adapted_schema>_summary_stats.tsv`` - contains summary statistics for each gene (number of alleles in the external schema, number of valid alleles included in the adapted schema and number of representative alleles chosen by chewBBACA).
+	- ``<adapted_schema>_invalid_alleles.txt`` - contains the identifiers of the alleles that were excluded and the reason for the exclusion of each allele.
+	- ``<adapted_schema>_invalid_genes.txt`` - contains the list of genes that had no valid alleles, one gene identifier per line.
+	- ``<adapted_schema>_summary_stats.tsv`` - contains summary statistics for each gene (number of alleles in the external schema, number of valid alleles included in the adapted schema and number of representative alleles chosen by chewBBACA).
 
 .. note::
 	For most genes, only one or a few sequences need to be chosen as representatives to represent the gene sequence diversity. Nevertheless, some genes will have a high number of representatives. This is more common for small genes, where a small number of differences has a big impact on the alignment score, for genes with repetitive or low complexity regions that may be masked by BLAST and lead to lower alignment scores between highly similar sequences, and for genes that have inversions, deletions or insertions that can lead to several High-scoring Segment Pairs (HSPs), none of which have a score sufficiently high to identify both sequences as belonging to the same gene.
@@ -80,14 +80,14 @@ Workflow of the PrepExternalSchema module
 
 The PrepExternalSchema module adapts schemas created with other wg/cgMLST tools or available on external platforms for usage with chewBBACA 3. Brief description of the workflow:
 
-- The process starts by validating and translating the alleles in the external schema. Incomplete (i.e. size not multiple of 3) and invalid (i.e. missing the start or stop codons, or containing in-frame stop codons) alleles, alleles containing ambiguous bases or smaller than the specified minimum length value, are excluded.
+	- The process starts by validating and translating the alleles in the external schema. Incomplete (i.e. size not multiple of 3) and invalid (i.e. missing the start or stop codons, or containing in-frame stop codons) alleles, alleles containing ambiguous bases or smaller than the specified minimum length value, are excluded.
 
-- For each locus that has valid alleles, the process selects the largest or one of the largest alleles as the first representative allele.
+	- For each locus that has valid alleles, the process selects the largest or one of the largest alleles as the first representative allele.
 
-- The representative is aligned against the locus' alleles with BLASTp to compute the BSR for each alignment. If all the BSR values are above the specified BSR (default is 0.6) plus 0.1, it is considered that the representative allele can adequately capture the diversity of the locus.
+	- The representative is aligned against the locus' alleles with BLASTp to compute the BSR for each alignment. If all the BSR values are above the specified BSR (default is 0.6) plus 0.1, it is considered that the representative allele can adequately capture the diversity of the locus.
 
-- Otherwise, new representative alleles are selected from those with a BSR above the specified BSR but below that value plus 0.1 to align against the locus' alleles and determine if the set of representative alleles selected captures the locus diversity adequately.
+	- Otherwise, new representative alleles are selected from those with a BSR above the specified BSR but below that value plus 0.1 to align against the locus' alleles and determine if the set of representative alleles selected captures the locus diversity adequately.
 
-- Representative selection is repeated until all locus' alleles have a BSR above the specified value plus 0.1 with at least one of the selected representative alleles.
+	- Representative selection is repeated until all locus' alleles have a BSR above the specified value plus 0.1 with at least one of the selected representative alleles.
 
-- The valid and selected representative alleles are written to FASTA files to create a schema compatible with chewBBACA. The list of invalid alleles, the list of loci excluded from the adapted schema due to having no valid alleles, and the number of total alleles and representative alleles per locus in the adapted schema are stored in output files.
+	- The valid and selected representative alleles are written to FASTA files to create a schema compatible with chewBBACA. The list of invalid alleles, the list of loci excluded from the adapted schema due to having no valid alleles, and the number of total alleles and representative alleles per locus in the adapted schema are stored in output files.

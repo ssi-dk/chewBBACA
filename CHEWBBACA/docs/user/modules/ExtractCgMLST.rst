@@ -48,13 +48,13 @@ Parameters
 Outputs
 -------
 
-The output folder contains 3 files:
+The output folder contains the following files:
 
-- ``Presence_Abscence.tsv`` - allele presence and absence matrix (1 or 0, respectively) for all the loci found in the ``-i`` file (excluding the loci and genomes that were flagged to be excluded).
-- ``mdata_stats.tsv`` - total number and percentage of loci missing from each genome.
-- ``cgMLST<threshold>.tsv`` - a file for each specified threshold that contains the matrix with the allelic profiles for the cgMLST (already excluding the list of loci and list of genomes passed to the ``--r`` and ``--g`` parameters, respectively).
-- ``cgMLSTschema<threshold>.txt`` - a file for each specified threshold that contains the list of loci that constitute the cgMLST schema. This file can be passed to the ``--gl`` parameter of the *AlleleCall* module to perform allele calling only for the loci in the list.
-- ``cgMLST.html`` - HTML file with a line plot for the number of loci in the cgMLST per threshold. Also includes a black line with the number of loci present in each genome that is added to the analysis.
+	- ``Presence_Abscence.tsv`` - allele presence and absence matrix (1 or 0, respectively) for all the loci found in the ``-i`` file (excluding the loci and genomes that were flagged to be excluded).
+	- ``mdata_stats.tsv`` - total number and percentage of loci missing from each genome.
+	- ``cgMLST<threshold>.tsv`` - a file for each specified threshold that contains the matrix with the allelic profiles for the cgMLST (already excluding the list of loci and list of genomes passed to the ``--r`` and ``--g`` parameters, respectively).
+	- ``cgMLSTschema<threshold>.txt`` - a file for each specified threshold that contains the list of loci that constitute the cgMLST schema. This file can be passed to the ``--gl`` parameter of the *AlleleCall* module to perform allele calling only for the loci in the list.
+	- ``cgMLST.html`` - HTML file with a line plot for the number of loci in the cgMLST per threshold. Also includes a black line with the number of loci present in each genome that is added to the analysis.
 
 .. important::
 	The ExtractCgMLST module masks the allelic profiles, which removes all ``INF-`` prefixes and substitutes *non-EXC* and *non-INF* classifications by ``0``.
@@ -77,12 +77,12 @@ Workflow of the ExtractCgMLST module
 
 The ExtractCgMLST module determines the set of core loci based on the allelic profiles determined by the AlleleCall module. Brief description of the workflow:
 
-- The process starts by excluding loci and samples from the analysis based on lists of loci and samples provided by the user. This allows users to filter out low-quality samples and problematic loci that would affect the determination of the core genome
+	- The process starts by excluding loci and samples from the analysis based on lists of loci and samples provided by the user. This allows users to filter out low-quality samples and problematic loci that would affect the determination of the core genome
 
-- The filtered allelic profiles are masked to remove the *INF-* prefixes from newly inferred alleles and substitute special classifications by ``0``.
+	- The filtered allelic profiles are masked to remove the *INF-* prefixes from newly inferred alleles and substitute special classifications by ``0``.
 
-- The masked profiles are used to compute a loci presence-absence matrix and count the number of special classifications per sample.
+	- The masked profiles are used to compute a loci presence-absence matrix and count the number of special classifications per sample.
 
-- The presence-absence matrix is also used to determine the set of core loci based on the default loci presence thresholds of 0.9, 0.95 and 1, or based on threshold values specified by the user.
+	- The presence-absence matrix is also used to determine the set of core loci based on the default loci presence thresholds of 0.9, 0.95 and 1, or based on threshold values specified by the user.
 
-- The process creates output files with the list of loci and allelic profiles per threshold and creates an HTML file with a scatter plot representing the core genome size variation for each threshold.
+	- The process creates output files with the list of loci and allelic profiles per threshold and creates an HTML file with a scatter plot representing the core genome size variation for each threshold.

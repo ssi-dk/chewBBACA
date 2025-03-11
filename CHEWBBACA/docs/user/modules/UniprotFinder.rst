@@ -64,10 +64,10 @@ Workflow of the UniprotFinder module
 
 The UniprotFinder module determines annotations for schema loci. Brief description of the workflow:
 
-- The module offers two options to determine annotations: aligning against UniProt's reference proteomes and exact matching through UniProt's SPARQL endpoint.
+	- The module offers two options to determine annotations: aligning against UniProt's reference proteomes and exact matching through UniProt's SPARQL endpoint.
 
-- Users must provide at least one valid taxon name to annotate based on the reference proteomes. The process downloads the list of reference proteomes and searches for proteomes for the specified taxa. If there are any proteomes for the specified taxa, they are downloaded, and the loci representative alleles are aligned against the reference proteomes so annotations can be selected based on the BSR.
+	- Users must provide at least one valid taxon name to annotate based on the reference proteomes. The process downloads the list of reference proteomes and searches for proteomes for the specified taxa. If there are any proteomes for the specified taxa, they are downloaded, and the loci representative alleles are aligned against the reference proteomes so annotations can be selected based on the BSR.
 
-- The process searches for annotations through UniProt's SPARQL endpoint by creating queries including the loci alleles and submitting requests to the endpoint. If an allele matches any protein in UniProt, the annotation terms are extracted from the results. The process tries to select the most informative annotation terms.
+	- The process searches for annotations through UniProt's SPARQL endpoint by creating queries including the loci alleles and submitting requests to the endpoint. If an allele matches any protein in UniProt, the annotation terms are extracted from the results. The process tries to select the most informative annotation terms.
 
-- The annotation terms found through both options are merged to create a single annotations table. If the user provides a TSV file with additional loci data, such as the file with CDS coordinates created by the CreateSchema and AlleleCall modules, the process will add the data in that file to the annotations table.
+	- The annotation terms found through both options are merged to create a single annotations table. If the user provides a TSV file with additional loci data, such as the file with CDS coordinates created by the CreateSchema and AlleleCall modules, the process will add the data in that file to the annotations table.

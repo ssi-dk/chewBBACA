@@ -231,16 +231,16 @@ Workflow of the AlleleCallEvaluator module
 
 The AlleleCallEvaluator module analyses allele calling results to create a report that allows users to explore results interactively. Brief description of the workflow:
 
-- The process starts by importing and computing sample and loci statistics based on the allele calling results. The sample and loci statistics are included in interactive data tables and charts on the main page of the HTML report.
+	- The process starts by importing and computing sample and loci statistics based on the allele calling results. The sample and loci statistics are included in interactive data tables and charts on the main page of the HTML report.
 
-- Loci annotations are imported and included in the main page of the report if provided. If the ``--light`` option is provided, the process does not add more information to the report.
+	- Loci annotations are imported and included in the main page of the report if provided. If the ``--light`` option is provided, the process does not add more information to the report.
 
-- Otherwise, the allelic profiles are imported and masked to remove *INF-* prefixes and substitute special classifications by ``0``.
+	- Otherwise, the allelic profiles are imported and masked to remove *INF-* prefixes and substitute special classifications by ``0``.
 
-- The masked profiles serve as the basis for computing a presence-absence (PA) matrix, enabling the determination of the set of loci that constitute the core genome.
+	- The masked profiles serve as the basis for computing a presence-absence (PA) matrix, enabling the determination of the set of loci that constitute the core genome.
 
-- The profile data for the core loci are used to compute a matrix of allelic distances.
+	- The profile data for the core loci are used to compute a matrix of allelic distances.
 
-- The core loci alleles identified per strain and locus are imported to compute the cgMLST alignment that FastTree uses to compute a Neighbour-Joining (NJ) tree.
+	- The core loci alleles identified per strain and locus are imported to compute the cgMLST alignment that FastTree uses to compute a Neighbour-Joining (NJ) tree.
 
-- The PA and distance matrices and NJ tree data are included in the report to be displayed and explored interactively.
+	- The PA and distance matrices and NJ tree data are included in the report to be displayed and explored interactively.

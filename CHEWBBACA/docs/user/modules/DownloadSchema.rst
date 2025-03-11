@@ -103,10 +103,10 @@ Workflow of the DownloadSchema module
 
 The DownloadSchema module imports schemas from Chewie-NS. Brief description of the workflow:
 
-- The process starts by sending a request with species and schema identifiers to Chewie-NS.
+	- The process starts by sending a request with species and schema identifiers to Chewie-NS.
 
-- If the schema exists, the process checks for a compressed and up-to-date version of the schema to download.
+	- If the schema exists, the process checks for a compressed and up-to-date version of the schema to download.
 
-- If the compressed schema in Chewie-NS is for the latest version of the schema, the compressed schema is downloaded and uncompressed to get a ready-to-use schema.
+	- If the compressed schema in Chewie-NS is for the latest version of the schema, the compressed schema is downloaded and uncompressed to get a ready-to-use schema.
 
-- Otherwise, the process will send requests to retrieve the FASTA files with the alleles for all loci and determine the representative alleles with the PrepExternalSchema module to create the schema locally.
+	- Otherwise, the process will send requests to retrieve the FASTA files with the alleles for all loci and determine the representative alleles with the PrepExternalSchema module to create the schema locally.

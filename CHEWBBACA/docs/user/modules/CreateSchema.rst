@@ -125,16 +125,16 @@ Workflow of the CreateSchema module
 
 The CreateSchema module creates a schema seed based on a set of FASTA files with genome assemblies or CDSs. Brief description of the workflow:
 
-- If genome assemblies are given, the process starts by predicting CDSs for each genome using Pyrodigal. Alternatively, if FASTA files containing CDSs are provided (``--cds`` parameter), the process skips the gene prediction step.
+	- If genome assemblies are given, the process starts by predicting CDSs for each genome using Pyrodigal. Alternatively, if FASTA files containing CDSs are provided (``--cds`` parameter), the process skips the gene prediction step.
 
-- The CDSs identified in the input files are deduplicated and translated (CDS translation identifies and excludes CDSs that contain ambiguous bases and with length below the theshold defined by the ``--l`` parameter), followed by a second deduplication step to determine the set of distinct translated CDSs. The schema creation process creates the same hash tables used in the allele calling process to store information about the distinct CDSs and distinct translated CDSs.
+	- The CDSs identified in the input files are deduplicated and translated (CDS translation identifies and excludes CDSs that contain ambiguous bases and with length below the theshold defined by the ``--l`` parameter), followed by a second deduplication step to determine the set of distinct translated CDSs. The schema creation process creates the same hash tables used in the allele calling process to store information about the distinct CDSs and distinct translated CDSs.
 
-- The distinct translated CDSs are clustered based on the proportion of minimizers (minimizers selected based on lexicographic order, k=5, w=5) shared with representative CDSs. The largest or one of the largest CDSs is selected as the first representative CDS. New representative CDSs are selected when CDSs share a low proportion (<0.2) of minimizers with any of the chosen representative CDSs.
+	- The distinct translated CDSs are clustered based on the proportion of minimizers (minimizers selected based on lexicographic order, k=5, w=5) shared with representative CDSs. The largest or one of the largest CDSs is selected as the first representative CDS. New representative CDSs are selected when CDSs share a low proportion (<0.2) of minimizers with any of the chosen representative CDSs.
 
-- Non-representative CDSs that share a proportion of minimizers ≥ 0.9 with the cluster representative are considered to correspond to the same locus and are excluded from the analysis.
+	- Non-representative CDSs that share a proportion of minimizers ≥ 0.9 with the cluster representative are considered to correspond to the same locus and are excluded from the analysis.
 
-- The proportion of shared minimizers between non-representative CDSs is determined to exclude CDSs sharing a proportion of minimizers ≥ 0.9 with larger CDSs.
+	- The proportion of shared minimizers between non-representative CDSs is determined to exclude CDSs sharing a proportion of minimizers ≥ 0.9 with larger CDSs.
 
-- Intracluster and intercluster alignment with BLASTp enable identifying and excluding CDSs similar to representative or larger non-representative CDSs based on a BLAST Score Ratio (BSR) ≥ 0.6.
+	- Intracluster and intercluster alignment with BLASTp enable identifying and excluding CDSs similar to representative or larger non-representative CDSs based on a BLAST Score Ratio (BSR) ≥ 0.6.
 
-- Each remaining distinct CDS is considered to be an allele of a distinct locus. The process ends by creating a schema seed, which includes one FASTA file containing a single representative allele per distinct locus identified in the analysis.
+	- Each remaining distinct CDS is considered to be an allele of a distinct locus. The process ends by creating a schema seed, which includes one FASTA file containing a single representative allele per distinct locus identified in the analysis.

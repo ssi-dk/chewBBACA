@@ -167,27 +167,43 @@ Outputs
 	- **PLOT3/PLOT5** - Possible Locus On the Tip of a contig (see image below). A CDS is classified as *PLOT5* or *PLOT3* if it is close to the contig 5’- or 3’-end and if the unaligned portion of the matched representative allele exceeds the contig end. This could be an artifact caused by genome fragmentation resulting in the prediction of a shorter CDS. To avoid locus misclassification, loci in such situations are classified as *PLOT*.
 	- **LOTSC** - A CDS is classified as *LOTSC* if the matched representative allele is bigger than the contig containing the CDS.
 
+|
+
 	.. image:: /_static/images/PLOT5_PLOT3_LOTSC.png
 		:width: 700px
 		:align: center
 
+|
+
 	- **NIPH/NIPHEM** - The *NIPH* and *NIPHEM* classifications are assigned when multiple CDSs from the same genome match the same schema locus. *NIPH* (Non-Informative Paralogous Hit) is assigned when multiple CDSs from the same genome match a single locus. *NIPHEM* (Non-Informative Paralogous Hit Exact Match) is assigned when multiple CDSs from the same genome are exact matches to alleles of a single locus. These classifications suggest that a locus can have paralogous (or orthologous) loci in the query genome and should be removed from the analysis due to the potential uncertainty in allele assignment (for example, due to the presence of multiple copies of the same mobile genetic element (MGE) or as a consequence of gene duplication followed by pseudogenization). A high number of these classifications may also indicate a poorly assembled genome due to a high number of smaller contigs which result in partial CDS predictions.
+
+|
 
 	.. image:: /_static/images/NIPH_NIPHEM.png
 		:width: 700px
 		:align: center
 
+|
+
 	- **PAMA** - PAralogous MAtch. Attributed to CDSs that are highly similar to more than one locus. This type of classification allows the identification of groups of similar loci in the schema that are classified as paralogous loci and listed in the ``paralogous_counts.tsv`` and ``paralogous_loci.tsv`` output files.
+
+|
 
 	.. image:: /_static/images/PAMA.png
 		:width: 700px
 		:align: center
 
+|
+
 	- **ASM/ALM** - The *ASM* (Allele Smaller than Mode) and *ALM* (Allele Larger than Mode) classifications are assigned when the size of a CDS that matches a schema locus is below or above the locus size variation interval, respectively. The default behaviour is to assign these classifications to alleles that are 20% shorter or longer than the locus allele size mode. It is important to remember that, although infrequently, the mode may change as more alleles for a given locus are called and added to a schema. The *ALM* and *ASM* classifications impose a limit on allele size variation since for the majority of loci the allele lengths are quite conserved. However, some loci can have larger variation in allele length and those should be manually curated.
+
+|
 
 	.. image:: /_static/images/ASM_ALM.png
 		:width: 700px
 		:align: center
+
+|
 
 .. important::
 	A high number of *PLOT3/PLOT5*, *LOTSC*, *NIPH/NIPHEM*, *PAMA*, and *ASM/ALM* classifications assigned to a genome usually indicates that the genome is of poor quality (e.g. highly fragmented or contaminated).
@@ -250,19 +266,19 @@ Workflow of the AlleleCall module
 
 The AlleleCall module determines the allelic profiles for strains of interest. Brief description of the workflow:
 
-- The process accepts FASTA files with genome assemblies or CDSs (``--cds`` parameter). If genome assemblies are given, the process starts by predicting CDSs for each genome using Pyrodigal.
+	- The process accepts FASTA files with genome assemblies or CDSs (``--cds`` parameter). If genome assemblies are given, the process starts by predicting CDSs for each genome using Pyrodigal.
 
-- The CDSs identified in the input files are deduplicated (chewBBACA stores information about the distinct CDSs and the genomes that contain those CDSs in a hashtable that maps CDS SHA-256 hashes to the list of unique integer identifiers for the input genomes that contain each CDS compressed with `polyline encoding <https://developers.google.com/maps/documentation/utilities/polylinealgorithm>`_ adapted from `numcompress <https://github.com/amit1rrr/numcompress>`_) and compared against the schema alleles to find and classify exact matches at the DNA level (information about the matches found for each locus is saved to classification files, one per locus in the schema. The classification files are updated throughout the process with information about the matches and classifications at each step). If the process runs in mode 1, the results are evaluated to write the output files and exit.
+	- The CDSs identified in the input files are deduplicated (chewBBACA stores information about the distinct CDSs and the genomes that contain those CDSs in a hashtable that maps CDS SHA-256 hashes to the list of unique integer identifiers for the input genomes that contain each CDS compressed with `polyline encoding <https://developers.google.com/maps/documentation/utilities/polylinealgorithm>`_ adapted from `numcompress <https://github.com/amit1rrr/numcompress>`_) and compared against the schema alleles to find and classify exact matches at the DNA level (information about the matches found for each locus is saved to classification files, one per locus in the schema. The classification files are updated throughout the process with information about the matches and classifications at each step). If the process runs in mode 1, the results are evaluated to write the output files and exit.
 
-- Otherwise, the CDSs that do not match any schema alleles at the DNA level are translated (CDS translation identifies and excludes CDSs that contain ambiguous bases and with length below the theshold defined by the ``--l`` parameter) and matched against the translated schema alleles to find exact matches at the protein level (hashtable mapping distinct protein SHA-256 hashes to the list of unique integer identifiers for the distinct CDSs encoded with polyline encoding). If the process runs in mode 2, the results are evaluated to write the output files, add new alleles to the schema and exit.
+	- Otherwise, the CDSs that do not match any schema alleles at the DNA level are translated (CDS translation identifies and excludes CDSs that contain ambiguous bases and with length below the theshold defined by the ``--l`` parameter) and matched against the translated schema alleles to find exact matches at the protein level (hashtable mapping distinct protein SHA-256 hashes to the list of unique integer identifiers for the distinct CDSs encoded with polyline encoding). If the process runs in mode 2, the results are evaluated to write the output files, add new alleles to the schema and exit.
 
-- Otherwise, the distinct translated CDSs not classified through exact matching are compared against the schema representative alleles through minimizer-based clustering (minimizers selected based on lexicographic order, k=5, w=5) to identify CDSs that share a proportion of minimizers ≥ 0.2 with the representative alleles.
+	- Otherwise, the distinct translated CDSs not classified through exact matching are compared against the schema representative alleles through minimizer-based clustering (minimizers selected based on lexicographic order, k=5, w=5) to identify CDSs that share a proportion of minimizers ≥ 0.2 with the representative alleles.
 
-- Each cluster's representative allele is aligned against the clustered CDSs with BLASTp to classify CDSs based on the defined BLAST Score Ratio (BSR) value (the default is 0.6) plus 0.1. At this point, if the process runs in mode 3, the results are evaluated to write the output files, add new alleles to the schema and exit.
+	- Each cluster's representative allele is aligned against the clustered CDSs with BLASTp to classify CDSs based on the defined BLAST Score Ratio (BSR) value (the default is 0.6) plus 0.1. At this point, if the process runs in mode 3, the results are evaluated to write the output files, add new alleles to the schema and exit.
 
-- Otherwise, the representative alleles are aligned against the remaining unclassified CDSs to classify them based on the defined BSR value and identify new representative alleles whose BSR is not above the defined BSR value plus 0.1. If the process finds new representative alleles, it aligns them against the unclassified CDSs to find new matches. This process repeats until no new representative alleles are identified.
+	- Otherwise, the representative alleles are aligned against the remaining unclassified CDSs to classify them based on the defined BSR value and identify new representative alleles whose BSR is not above the defined BSR value plus 0.1. If the process finds new representative alleles, it aligns them against the unclassified CDSs to find new matches. This process repeats until no new representative alleles are identified.
 
-- When no new representative alleles are found, the process evaluates the results to create the output files, add new alleles to the schema, and exit
+	- When no new representative alleles are found, the process evaluates the results to create the output files, add new alleles to the schema, and exit
 
 Identify genetic clusters
 :::::::::::::::::::::::::

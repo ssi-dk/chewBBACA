@@ -73,9 +73,7 @@ Outputs
   - A table with the total number of samples, total number of loci, total number of coding sequences (CDSs) extracted from the samples, total number of CDSs classified and totals per classification type.
   - A tab panel with stacked bar charts for the classification type counts per sample and per locus.
   - A tab panel with detailed sample and locus statistics.
-  - If a TSV file with annotations is provided to the ``--annotations`` parameter, the report
-    will also include a table with the provided annotations. Otherwise, it will display a warning informing that
-    no annotations were provided.
+  - If a TSV file with annotations is provided to the ``--annotations`` parameter, the report will also include a table with the provided annotations. Otherwise, it will display a warning informing that no annotations were provided.
   - A Heatmap chart representing the loci presence-absence matrix for all samples in the dataset.
   - A Heatmap chart representing the allelic distance matrix for all samples in the dataset.
   - A tree drawn with `Phylocanvas.gl <https://www.npmjs.com/package/@phylocanvas/phylocanvas.gl>`_ based on the Neighbor-Joining (NJ) tree computed by `FastTree <http://www.microbesonline.org/fasttree/>`_.
@@ -125,14 +123,12 @@ The second component is a table with summary statistics about the allele calling
    :width: 1400px
    :align: center
 
-Please visit the section about the :doc:`AlleleCall </user/modules/AlleleCall>` module if you want to know
-more about the classification types.
+Please visit the section about the :doc:`AlleleCall </user/modules/AlleleCall>` module if you want to know more about the classification types.
 
 Classification Counts
 .....................
 
-The third component contains two panels with stacked bar charts displaying the classification type counts
-per sample and per locus.
+The third component contains two panels with stacked bar charts displaying the classification type counts per sample and per locus.
 
 - Panel A, ``Counts Per Sample``, displays the stacked bar charts for the sample classification type counts.
 
@@ -146,9 +142,7 @@ per sample and per locus.
    :width: 1400px
    :align: center
 
-The plot area will display at most data for 300 samples/loci. You can click the left/right arrows to view the
-previous/next 300 samples/loci and the double left/right arrows to view the data for the first/last 300 samples/loci.
-The component includes a slider to select the range of sample/loci bars that are visible.
+The plot area will display at most data for 300 samples/loci. You can click the left/right arrows to view the previous/next 300 samples/loci and the double left/right arrows to view the data for the first/last 300 samples/loci. The component includes a slider to select the range of sample/loci bars that are visible.
 
 Detailed Statistics
 ...................
@@ -179,8 +173,7 @@ The ``Loci Stats`` table includes the following columns:
 .. note::
    You can use the table **View Columns** feature to display columns with the count for each classification type.
 
-The dropdown menu below the tables allows the selection of a single column to generate a histogram for the values in
-the selected column.
+The dropdown menu below the tables allows the selection of a single column to generate a histogram for the values in the selected column.
 
 .. image:: /_static/images/allelecall_report_detailed_stats.png
    :width: 1400px
@@ -189,34 +182,23 @@ the selected column.
 Loci annotations
 ................
 
-If a TSV file with loci annotations is provided, the fifth component of the schema report is a table
-with the list of annotations. Otherwise, it will display a warning informing that no annotations
-were provided.
+If a TSV file with loci annotations is provided, the fifth component of the schema report is a table with the list of annotations. Otherwise, it will display a warning informing that no annotations were provided.
 
 .. image:: /_static/images/allelecall_report_annotations.png
    :width: 1400px
    :align: center
 
-If a column name includes ``URL``, the AlleleCallEvaluator module assumes that the values in that column
-are URLs and creates links to the web pages.
+If a column name includes ``URL``, the AlleleCallEvaluator module assumes that the values in that column are URLs and creates links to the web pages.
 
 .. important::
-  The first column in the TSV file with annotations must be named ``Locus`` and contain the identifiers
-  of the loci (the basename of the locus FASTA file without the ``.fasta`` extension).
+  The first column in the TSV file with annotations must be named ``Locus`` and contain the identifiers of the loci (the basename of the locus FASTA file without the ``.fasta`` extension).
 
-You can use the :doc:`UniprotFinder </user/modules/UniprotFinder>` module to annotate the loci in a schema
-created with chewBBACA. If you want to annotate an external schema, you can adapt it with the
-:doc:`PrepExternalSchema </user/modules/PrepExternalSchema>` module followed by annotation with the
-:doc:`UniprotFinder </user/modules/UniprotFinder>` module.
+You can use the :doc:`UniprotFinder </user/modules/UniprotFinder>` module to annotate the loci in a schema created with chewBBACA. If you want to annotate an external schema, you can adapt it with the :doc:`PrepExternalSchema </user/modules/PrepExternalSchema>` module followed by annotation with the :doc:`UniprotFinder </user/modules/UniprotFinder>` module.
 
 Loci Presence-Absence
 .....................
 
-The sixth component displays a heatmap representing the loci presence-absence matrix for all samples in the
-dataset. Blue cells (z=1) correspond to loci presence and grey cells (z=0) to loci absence. The **Select Sample**
-dropdown menu enables the selection of a single sample to display its heatmap on top of the main heatmap. The
-**Select Locus** dropdown menu enables the selection of a single locus to display its heatmap on the right of
-the main heatmap.
+The sixth component displays a heatmap representing the loci presence-absence matrix for all samples in the dataset. Blue cells (z=1) correspond to loci presence and grey cells (z=0) to loci absence. The **Select Sample** dropdown menu enables the selection of a single sample to display its heatmap on top of the main heatmap. The **Select Locus** dropdown menu enables the selection of a single locus to display its heatmap on the right of the main heatmap.
 
 .. image:: /_static/images/allelecall_report_pa_heatmap.png
    :width: 1400px
@@ -225,12 +207,7 @@ the main heatmap.
 Allelic Distances
 .................
 
-The seventh component displays a heatmap representing the symmetric distance matrix. The distances are computed
-by determining the number of allelic differences from the set of core loci (shared by 100% of the samples) between each
-pair of samples. The **Select Sample** dropdown menu enables the selection of a single sample to display
-its heatmap on top of the main heatmap. The menu after the heatmap enables the selection of a single sample and of
-a distance threshold to display a table with the list of samples at a distance equal or smaller than the specified
-distance value.
+The seventh component displays a heatmap representing the symmetric distance matrix. The distances are computed by determining the number of allelic differences from the set of core loci (shared by 100% of the samples) between each pair of samples. The **Select Sample** dropdown menu enables the selection of a single sample to display its heatmap on top of the main heatmap. The menu after the heatmap enables the selection of a single sample and of a distance threshold to display a table with the list of samples at a distance equal or smaller than the specified distance value.
 
 .. image:: /_static/images/allelecall_report_dm_heatmap.png
    :width: 1400px
@@ -239,11 +216,7 @@ distance value.
 Core-genome Neighbor-Joining Tree
 .................................
 
-The last component displays a tree drawn with `Phylocanvas.gl <https://www.npmjs.com/package/@phylocanvas/phylocanvas.gl>`_
-based on the Neighbor-Joining (NJ) tree computed by `FastTree <http://www.microbesonline.org/fasttree/>`_ (with the options
-``-fastest``, ``-nosupport`` and ``-noml``). The tree is computed based on the MSA for the set of loci that constitute the
-core-genome (The MSA for each core locus is determined with `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_, with the
-options ``--retree 1`` and ``--maxiterate 0``. The MSAs for all the core loci are concatenated to create the full MSA).
+The last component displays a tree drawn with `Phylocanvas.gl <https://www.npmjs.com/package/@phylocanvas/phylocanvas.gl>`_ based on the Neighbor-Joining (NJ) tree computed by `FastTree <http://www.microbesonline.org/fasttree/>`_ (with the options ``-fastest``, ``-nosupport`` and ``-noml``). The tree is computed based on the MSA for the set of loci that constitute the core-genome (The MSA for each core locus is determined with `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_, with the options ``--retree 1`` and ``--maxiterate 0``. The MSAs for all the core loci are concatenated to create the full MSA).
 
 .. image:: /_static/images/allelecall_report_cgMLST_tree.png
    :width: 1400px

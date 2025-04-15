@@ -21,7 +21,7 @@ input files, one full path per line):
 Option 2 - Coding DNA Sequences
 ...............................
 
-You can provide FASTA files with Coding DNA Sequences (CDSs) and skip the gene prediction step by passing the ``--cds`` parameter:
+You can provide FASTA files with Coding DNA Sequences (CDSs), one file per genome/strain, and skip the gene prediction step by passing the ``--cds`` parameter:
 
 ::
 	

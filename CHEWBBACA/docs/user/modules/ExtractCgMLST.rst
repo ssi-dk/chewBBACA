@@ -77,7 +77,7 @@ Workflow of the ExtractCgMLST module
 
 The ExtractCgMLST module determines the set of core loci based on the allelic profiles determined by the AlleleCall module. Brief description of the workflow:
 
-	- The process starts by excluding loci and samples from the analysis based on lists of loci and samples provided by the user. This allows users to filter out low-quality samples and problematic loci that would affect the determination of the core genome
+	- The process starts by excluding loci and samples from the analysis based on lists of loci and samples provided by the user. This allows users to filter out low-quality samples and problematic loci that would affect the determination of the core genome.
 
 	- The filtered allelic profiles are masked to remove the *INF-* prefixes from newly inferred alleles and substitute special classifications by ``0``.
 

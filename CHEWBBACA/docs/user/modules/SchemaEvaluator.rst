@@ -323,4 +323,4 @@ The SchemaEvaluator module analyses a schema to create a report that allows user
 
 	- If the ``--add-sequences`` option is provided, the allele DNA sequences are imported and translated to add DNA and protein sequences to code editors on the locus page, which facilitates identifying and manipulating alleles of interest.
 
-	- Additionally, the process computes a multiple sequence alignment (MSA) for each locus at the protein level with MAFFT to display the MSA and MAFFT's guide tree on interactive components. The MSA and guide tree are not displayed if the ``--light`` option is provided.
+	- Additionally, the process computes a multiple sequence alignment (MSA) for each locus at the protein level with MAFFT to display the MSA and MAFFT's guide tree on interactive components. The MSA and guide tree are not computed if the ``--light`` option is provided.

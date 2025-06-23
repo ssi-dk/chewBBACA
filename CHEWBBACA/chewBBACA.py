@@ -25,6 +25,7 @@ try:
 	from PrepExternalSchema import adapt_schema
 	from UniprotFinder import annotate_schema
 	from ExtractCgMLST import determine_cgmlst
+	from GetAlleles import get_alleles
 	from utils import (join_profiles,
 					   remove_genes,
 					   gene_prediction as gp,
@@ -47,6 +48,7 @@ except ModuleNotFoundError:
 	from CHEWBBACA.PrepExternalSchema import adapt_schema
 	from CHEWBBACA.UniprotFinder import annotate_schema
 	from CHEWBBACA.ExtractCgMLST import determine_cgmlst
+	from CHEWBBACA.GetAlleles import get_alleles
 	from CHEWBBACA.utils import (join_profiles,
 								 remove_genes,
 								 gene_prediction as gp,
@@ -896,6 +898,80 @@ def run_join_profiles():
 
 
 @pdt.process_timer
+def run_get_alleles():
+	"""Run the GetAlleles module to create FASTA files containing the alleles identified by the AlleleCall module."""
+
+	def msg(name=None):
+		usage_msg = 'chewBBACA.py GetAlleles --input-file <file> --output-directory <dir> [options]'
+
+		return usage_msg
+
+	parser = argparse.ArgumentParser(prog='GetAlleles',
+									 description='Create FASTA files containing the alleles identified by the AlleleCall module.',
+									 usage=msg(),
+									 formatter_class=ModifiedHelpFormatter,
+									 epilog='Module documentation available at '
+											'https://chewbbaca.readthedocs.io/en/latest/user/modules/GetAlleles.html')
+
+	parser.add_argument('GetAlleles', nargs='+', help=argparse.SUPPRESS)
+
+	parser.add_argument('-i', '--input-file', type=str,
+						required=True, dest='input_file',
+						help='Path to the TSV file with allelic profiles.')
+
+	parser.add_argument('-g', '--schema-directory', type=str,
+						required=True, dest='schema_directory',
+						help='Path to the schema directory.')
+
+	parser.add_argument('-o', '--output-directory', type=str,
+						required=True, dest='output_directory',
+						help='Path to the output directory.')
+
+	parser.add_argument('--cpu', '--cpu-cores', type=pv.verify_cpu_usage,
+						required=False, default=1, dest='cpu_cores',
+						help='Number of CPU cores/threads that will be '
+							 'used to run the process (chewie resets to a '
+							 'lower value if it is equal to or exceeds the total '
+							 'number of available CPU cores/threads).')
+
+	parser.add_argument('--distinct', action='store_true',
+						required=False, dest='distinct',
+						help='Only get distinct alleles.')
+
+	parser.add_argument('--translate', action='store_true',
+						required=False, dest='translate',
+						help='Create FASTA files with the translated alleles.')
+
+	parser.add_argument('--ta', '--translation-table',
+						type=pv.translation_table_type, required=False,
+						dest='translation_table',
+						help='Genetic code used to translate coding DNA'
+							 'sequences (CDSs). If no value is specified, the '
+							 'process tries to get the value stored in the '
+							 'schema config file. If the schema does not '
+							 'include a config file, the process uses the '
+							 'default translation table (11).')
+
+	args = parser.parse_args()
+	del args.GetAlleles
+
+	if args.translate and not args.translation_table:
+		# Check if schema includes config file
+		config_file = os.path.join(args.schema_directory, ct.SCHEMA_CONFIG_BASENAME)
+		if os.path.isfile(config_file):
+			schema_params = fo.pickle_loader(config_file)
+			args.translation_table = schema_params['translation_table'][0]
+		else:
+			# Use default translation table
+			args.translation_table = ct.GENETIC_CODES_DEFAULT
+
+	# Create output directory
+	created = fo.create_directory(args.output_directory)
+
+	get_alleles.main(**vars(args))
+
+
+@pdt.process_timer
 def run_adapt_schema():
 	"""Run the PrepExternalSchema module to adapt a typing schema."""
 
@@ -1494,6 +1570,8 @@ def main():
 					  'JoinProfiles': ['Join allele calling results from '
 									   'different runs.',
 									   run_join_profiles],
+					  'GetAlleles': ['Create FASTA files containing the alleles identified by the AlleleCall module.',
+					  				 run_get_alleles],
 					  'UniprotFinder': ['Retrieve annotations for loci in a schema.',
 										run_annotate_schema],
 					  'DownloadSchema': ['Download a schema from Chewie-NS.',

@@ -17,9 +17,9 @@ BLAST Score Ratio as proposed by [Rasko DA et al.](http://bmcbioinformatics.biom
 
 ## News
 
-## 3.3.10 - 2024-08-06
+## 3.4.0 - 2025-06-23
 
-- Fixed issue in the UniprotFinder module related to TrEMBL and Swiss-Prot IDs being parsed by BLAST when the `qacc` and `sacc` format specifiers were used with `-outfmt 6`. Switched back to the `qseqid` and `sseqid` format specifiers.
+- Add the GetAlleles module to create FASTA files containing the alleles identified by the AlleleCall module.
 
 Check our [Changelog](https://github.com/B-UMMI/chewBBACA/blob/master/CHANGELOG.md) to learn about the latest changes.
 

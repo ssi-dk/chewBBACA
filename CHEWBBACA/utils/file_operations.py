@@ -466,7 +466,6 @@ def write_lines(lines, output_file, joiner='\n', write_mode='w'):
 		the end of file if it exists).
 	"""
 	joined_lines = im.join_list(lines, joiner)
-
 	write_to_file(joined_lines, output_file, write_mode, '\n')
 
 

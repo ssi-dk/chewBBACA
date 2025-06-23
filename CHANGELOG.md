@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.0 - 2025-06-23
+
+- Add the GetAlleles module to get the alleles identified in a dataset and save them to FASTA files.
+
 ## 3.3.10 - 2024-08-06
 
 - Fixed issue in the UniprotFinder module related to TrEMBL and Swiss-Prot IDs being parsed by BLAST when the `qacc` and `sacc` format specifiers were used with `-outfmt 6`. Switched back to the `qseqid` and `sseqid` format specifiers.

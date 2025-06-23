@@ -917,11 +917,18 @@ def run_get_alleles():
 
 	parser.add_argument('-i', '--input-file', type=str,
 						required=True, dest='input_file',
-						help='Path to the TSV file with allelic profiles.')
+						help='Path to the TSV file containing the allelic profiles.')
 
 	parser.add_argument('-g', '--schema-directory', type=str,
 						required=True, dest='schema_directory',
 						help='Path to the schema directory.')
+
+	parser.add_argument('--gl', '--genes-list', type=str,
+						required=False, dest='genes_list',
+						help='Path to a file with the list of genes/loci to '
+							 'create FASTA files for. The file must include '
+							 'the identifiers of the loci, one per line, '
+							 'without the .fasta extension.')
 
 	parser.add_argument('-o', '--output-directory', type=str,
 						required=True, dest='output_directory',
@@ -967,6 +974,8 @@ def run_get_alleles():
 
 	# Create output directory
 	created = fo.create_directory(args.output_directory)
+	if created is False:
+		sys.exit(ct.OUTPUT_DIRECTORY_EXISTS)
 
 	get_alleles.main(**vars(args))
 

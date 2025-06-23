@@ -58,7 +58,7 @@ def get_locus_alleles(locus_id, allele_ids, locus_file, output_directory):
 		else:
 			header = f'>{locus_id}_{a[0][1]}'
 		sequence = a[1]
-		###############################################################
+		################################
 		# Alleles must be in the schema!
 		try:
 			record = '\n'.join([header, sequence])
@@ -73,10 +73,18 @@ def get_locus_alleles(locus_id, allele_ids, locus_file, output_directory):
 	return output_file
 
 
-def main(input_file, schema_directory, output_directory, cpu_cores, distinct, translate, translation_table):
+def main(input_file, schema_directory, genes_list, output_directory, cpu_cores, distinct, translate, translation_table):
 	# Read input file
-	print('Reading input file with allelic profiles...')
-	profiles = pd.read_csv(input_file, delimiter='\t', dtype=str, index_col=0)
+	print('Importing allelic profiles...')
+	if not genes_list:
+		profiles = pd.read_csv(input_file, delimiter='\t', dtype=str, index_col=0)
+	# User provided a list of loci to create FASTA files for
+	else:
+		# Read list of loci from file
+		print(f'User provided list of loci: {genes_list}')
+		loci_list = fo.read_lines(genes_list, strip=True)
+		profiles = pd.read_csv(input_file, delimiter='\t', dtype=str, index_col=0, usecols=['FILE'] + loci_list)
+
 	nsamples, nloci = profiles.shape
 	print(f'Total loci: {nloci}')
 	print(f'Total samples: {nsamples}')
@@ -86,7 +94,7 @@ def main(input_file, schema_directory, output_directory, cpu_cores, distinct, tr
 	masked_profiles = profiles.apply(im.replace_chars)
 
 	# Create folder to store FASTA files
-	alleles_directory = fo.join_paths(output_directory, ['alleles'])
+	alleles_directory = fo.join_paths(output_directory, ['fastas'])
 	fo.create_directory(alleles_directory)
 
 	# Get alleles per locus
@@ -95,6 +103,8 @@ def main(input_file, schema_directory, output_directory, cpu_cores, distinct, tr
 	loci_files = [fo.join_paths(schema_directory, [f'{locus}.fasta']) for locus in loci]
 	inputs = []
 	loci_stats = {locus: [] for locus in loci}
+	absent_loci = 0
+	print('Determining the list of alleles identified for each locus...')
 	for i, locus_id in enumerate(loci):
 		# Get alleles identifiers
 		locus_column = masked_profiles[locus_id]
@@ -105,6 +115,7 @@ def main(input_file, schema_directory, output_directory, cpu_cores, distinct, tr
 		# Only try to fetch if the locus is in at least one sample
 		if len(locus_column) == 0:
 			print(f'No alleles for locus {locus_id} in the dataset. Skipping...')
+			absent_loci += 1
 			continue
 		else:
 			# Store sample and allele ID
@@ -118,6 +129,8 @@ def main(input_file, schema_directory, output_directory, cpu_cores, distinct, tr
 				allele_ids = [(None, i) for i in allele_ids]
 			# Append input data for multiprocessing
 			inputs.append((locus_id, allele_ids, loci_files[i], alleles_directory, get_locus_alleles))
+
+	print(f'Number of loci that were not identified in the dataset: {absent_loci}')
 
 	output_files = []
 
@@ -140,7 +153,7 @@ def main(input_file, schema_directory, output_directory, cpu_cores, distinct, tr
 
 	if translate:
 		# Create folder to store FASTA files
-		translated_alleles_directory = fo.join_paths(output_directory, ['translated_alleles'])
+		translated_alleles_directory = fo.join_paths(output_directory, ['translated_fastas'])
 		fo.create_directory(translated_alleles_directory)
 		print('Translating alleles...')
 		inputs = [[file, translated_alleles_directory, translation_table, fao.translate_fasta] for file in fasta_files]

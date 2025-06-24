@@ -1,7 +1,7 @@
 GetAlleles -  Create FASTA files containing the alleles identified by the AlleleCall module
 ===========================================================================================
 
-The *GetAlleles* module is used to create FASTA files containing the alleles identified by the *AlleleCall* module. Given a TSV file with the allelic profiles, this module generates FASTA files for each gene/locus, including the nucleotide sequences and optionally the translated sequences (if the ``--translate`` option is provided). If the ``--distinct`` option is provided, the module will only include distinct alleles in the output files (this also applies to the FASTA files created when using the ``--translate`` option). If a TXT file with a list of gene/locus identifiers is provided through the ``--genes-list`` paramete, the module will only create FASTA files for the specified genes/loci. Otherwise, the module will create FASTA files for all genes/loci present in the input TSV file.
+The *GetAlleles* module is used to create FASTA files containing the alleles identified by the *AlleleCall* module. Given a TSV file with the allelic profiles, this module generates FASTA files for each gene/locus, including the nucleotide sequences and optionally the translated sequences (if the ``--translate`` option is provided). If the ``--distinct`` option is provided, the module will only include distinct alleles in the output files (this also applies to the FASTA files created when using the ``--translate`` option). If a TXT file with a list of gene/locus identifiers is provided through the ``--genes-list`` parameter, the module will only create FASTA files for the specified genes/loci. Otherwise, the module will create FASTA files for all genes/loci present in the input TSV file.
 
 Basic Usage
 -----------
@@ -15,28 +15,28 @@ Parameters
 
 ::
 
-	-i, --input-file           (Required) Path to the TSV file containing the allelic profiles (default: None).
+	-i, --input-file         	(Required) Path to the TSV file containing the allelic profiles (default: None).
                             
- 	-g, --schema-directory     (Required) Path to the schema directory (default: None).
+ 	-g, --schema-directory   	(Required) Path to the schema directory (default: None).
                             
- 	--gl, --genes-list         (Optional) Path to a file with the list of genes/loci to create FASTA files for.
-                               The file must include the identifiers of the loci, one per line, without
-                               the .fasta extension (default: None).
+ 	--gl, --genes-list      	(Optional) Path to a file with the list of genes/loci to create FASTA files for.
+								The file must include the identifiers of the loci, one per line, without
+                            	the .fasta extension (default: None).
                             
- 	-o, --output-directory     (Required) Path to the output directory (default: None).
+ 	-o, --output-directory   	(Required) Path to the output directory (default: None).
                             
- 	--cpu, --cpu-cores         (Optional) Number of CPU cores/threads that will be used to run the process (chewie
-                               resets to a lower value if it is equal to or exceeds the total number of
-                               available CPU cores/threads) (default: 1).
+ 	--cpu, --cpu-cores       	(Optional) Number of CPU cores/threads that will be used to run the process (chewie
+                        		resets to a lower value if it is equal to or exceeds the total number of
+                            	available CPU cores/threads) (default: 1).
                             
- 	--distinct                 (Optional) Only get distinct alleles (default: False).
+ 	--distinct               	(Optional) Only get distinct alleles (default: False).
                             
- 	--translate                (Optional) Create FASTA files with the translated alleles (default: False).
+ 	--translate              	(Optional) Create FASTA files with the translated alleles (default: False).
                             
- 	--ta, --translation-table  (Optional) Genetic code used to translate coding DNAsequences (CDSs). If no value
-                               is specified, the process tries to get the value stored in the schema
-                               config file. If the schema does not include a config file, the process
-                               uses the default translation table (11) (default: None).
+ 	--ta, --translation-table	(Optional) Genetic code used to translate coding DNAsequences (CDSs). If no value
+                        		is specified, the process tries to get the value stored in the schema
+                            	config file. If the schema does not include a config file, the process
+                            	uses the default translation table (11) (default: None).
 
 Outputs
 :::::::

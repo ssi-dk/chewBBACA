@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'chewBBACA'
-copyright = '2024, UMMI'
+copyright = '2025, UMMI'
 author = 'Rafael Mamede'
 
 # The full version, including alpha/beta/rc tags
-release = '3.3.10'
+release = '3.4.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.mathjax',
     'sphinx_rtd_theme',
+	'sphinx_copybutton',
     # 'sphinxcontrib.httpdomain',
     # 'sphinxcontrib.autohttp.flask',
     # 'sphinxcontrib.autohttp.flaskqref'

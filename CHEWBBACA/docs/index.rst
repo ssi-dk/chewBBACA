@@ -1,7 +1,4 @@
-.. chewBBACA documentation master file, created by
-   sphinx-quickstart on Fri Sep 23 17:09:56 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. chewBBACA documentation master file, created by rfm
 
 Welcome to chewBBACA's documentation!
 =====================================
@@ -27,6 +24,7 @@ Welcome to chewBBACA's documentation!
    user/modules/ExtractCgMLST
    user/modules/RemoveGenes
    user/modules/PrepExternalSchema
+   user/modulees/GetAlleles
    user/modules/JoinProfiles
    user/modules/UniprotFinder
    user/modules/DownloadSchema

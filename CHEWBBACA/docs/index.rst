@@ -24,7 +24,7 @@ Welcome to chewBBACA's documentation!
    user/modules/ExtractCgMLST
    user/modules/RemoveGenes
    user/modules/PrepExternalSchema
-   user/modulees/GetAlleles
+   user/modules/GetAlleles
    user/modules/JoinProfiles
    user/modules/UniprotFinder
    user/modules/DownloadSchema

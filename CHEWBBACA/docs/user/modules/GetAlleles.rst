@@ -6,7 +6,7 @@ The *GetAlleles* module is used to create FASTA files containing the alleles ide
 Basic Usage
 -----------
 
-.. code-block:: bash
+::
 
 	chewBBACA.py GetAlleles -i /path/to/AlleleCallResultsFolder/results_alleles.tsv -g /path/to/SchemaFolder -o /path/to/OutputFolder
 

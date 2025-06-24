@@ -902,7 +902,7 @@ def run_get_alleles():
 	"""Run the GetAlleles module to create FASTA files containing the alleles identified by the AlleleCall module."""
 
 	def msg(name=None):
-		usage_msg = 'chewBBACA.py GetAlleles --input-file <file> --output-directory <dir> [options]'
+		usage_msg = 'chewBBACA.py GetAlleles --input-file <file> --schema-directory <dir> --output-directory <dir> [options]'
 
 		return usage_msg
 

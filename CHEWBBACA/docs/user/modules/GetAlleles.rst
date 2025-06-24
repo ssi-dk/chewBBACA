@@ -15,7 +15,7 @@ Parameters
 
 ::
 
-	-i, --input-file            (Required) Path to the TSV file containing the allelic profiles (default: None).
+    -i, --input-file            (Required) Path to the TSV file containing the allelic profiles (default: None).
 
     -g, --schema-directory      (Required) Path to the schema directory (default: None).
 
@@ -25,19 +25,19 @@ Parameters
 
     -o, --output-directory      (Required) Path to the output directory (default: None).
 
-    --cpu, --cpu-cores      	(Optional) Number of CPU cores/threads that will be used to run the process (chewie
+    --cpu, --cpu-cores          (Optional) Number of CPU cores/threads that will be used to run the process (chewie
                                 resets to a lower value if it is equal to or exceeds the total number of
-								available CPU cores/threads) (default: 1).
+                                available CPU cores/threads) (default: 1).
 
-    --distinct  				(Optional) Only get distinct alleles (default: False).
+    --distinct                  (Optional) Only get distinct alleles (default: False).
 
 
-    --translate       			(Optional) Create FASTA files with the translated alleles (default: False).
+    --translate                 (Optional) Create FASTA files with the translated alleles (default: False).
 
     --ta, --translation-table   (Optional) Genetic code used to translate coding DNAsequences (CDSs). If no value
                                 is specified, the process tries to get the value stored in the schema
                                 config file. If the schema does not include a config file, the process
-								uses the default translation table (11) (default: None).
+                                uses the default translation table (11) (default: None).
 
 Outputs
 :::::::

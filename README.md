@@ -19,7 +19,7 @@ BLAST Score Ratio as proposed by [Rasko DA et al.](http://bmcbioinformatics.biom
 
 ## 3.4.1 - 2025-07-30
 
-- Changed the `-max_target_seqs` value used by the [select_representatives]() function to the square of the number of potential new representative alleles or to a minimum of 100. This change tries to fix an issue where BLASTp would not report the self-alignment for some alleles because it reached the limit of the number of alignments to report before reporting all self-alignments (e.g. for very large datasets, the number of potential new representatives may lead to a number of alignments that exceeds the value passed to `-max_target_seqs`).
+- Changed the `-max_target_seqs` value used by the [select_representatives](https://github.com/B-UMMI/chewBBACA/blob/69afd188be8637f5f5adfcf03dc5b1129b91d69b/CHEWBBACA/AlleleCall/allele_call.py#L1750) function to the square of the number of potential new representative alleles or to a minimum of 100. This change tries to fix an issue where BLASTp would not report the self-alignment for some alleles because it reached the limit of the number of alignments to report before reporting all self-alignments (e.g. for very large datasets, the number of potential new representatives may lead to a number of alignments that exceeds the value passed to `-max_target_seqs`).
 
 Check our [Changelog](https://github.com/B-UMMI/chewBBACA/blob/master/CHANGELOG.md) to learn about the latest changes.
 

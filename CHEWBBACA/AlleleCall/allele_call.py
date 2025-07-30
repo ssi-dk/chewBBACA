@@ -1803,12 +1803,20 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	blast_output = fo.join_paths(output_directory,
 								 ['{0}_candidates_{1}_blastout.tsv'.format(locus, iteration)])
 	# Define -max_target_seqs to reduce execution time
+	# Defining a value such as 100 or 500, which is the default, may fail if the number of possible alignments exceeds that value
+	# Setting it to the square of the number of representative candidates should match the theoretical limit based on the arguments passed to BLAST
+	# However, runtime can also increase a lot when processing some datasets
+	max_targets_value = len(representative_candidates) ** 2
+	# Set 100 as default if max_target_value is small
+	# This also helps avoid BLAST warning related to 5 or more matches
+	max_targets_value = max_targets_value if max_targets_value > 100 else 100
 	blastp_std = bw.run_blast(blastp_path, blast_db, fasta_file,
 							  blast_output, threads=threads,
-							  ids_file=ids_file, max_targets=100)
+							  ids_file=ids_file, max_targets=max_targets_value)
 
 	blast_results = fo.read_tabular(blast_output)
 	# Get self-score for all candidates
+	# This may fail if the self-alignment is missing (see comment above about -max_target_seqs)
 	candidates_self_scores = {line[0]: ((int(line[3])*3)+3, float(line[6]))
 							  for line in blast_results if line[0] == line[4]}
 	# Select results between different candidates

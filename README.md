@@ -17,9 +17,9 @@ BLAST Score Ratio as proposed by [Rasko DA et al.](http://bmcbioinformatics.biom
 
 ## News
 
-## 3.4.0 - 2025-06-23
+## 3.4.1 - 2025-07-30
 
-- Add the GetAlleles module to create FASTA files containing the alleles identified by the AlleleCall module.
+- Changed the `-max_target_seqs` value used by the [select_representatives]() function to the square of the number of potential new representative alleles or to a minimum of 100. This change tries to fix an issue where BLASTp would not report the self-alignment for some alleles because it reached the limit of the number of alignments to report before reporting all self-alignments (e.g. for very large datasets, the number of potential new representatives may lead to a number of alignments that exceeds the value passed to `-max_target_seqs`).
 
 Check our [Changelog](https://github.com/B-UMMI/chewBBACA/blob/master/CHANGELOG.md) to learn about the latest changes.
 

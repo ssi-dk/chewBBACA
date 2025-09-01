@@ -1393,8 +1393,8 @@ def run_upload_schema():
 						required=False, dest='annotations', default=None,
 						help='Path to a TSV file with loci annotations. '
 							 'The first column has loci identifiers (w/o .fasta '
-							 'extension), the second has Uniprot labels,'
-							 ' the third has Uniprot URIs, the fourth has user '
+							 'extension), the second has UniProt labels,'
+							 ' the third has UniProt URIs, the fourth has user '
 							 'annotations, and the fifth has custom annotations.')
 
 	parser.add_argument('--cpu', '--cpu-cores', type=pv.verify_cpu_usage,

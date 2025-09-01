@@ -17,9 +17,11 @@ BLAST Score Ratio as proposed by [Rasko DA et al.](http://bmcbioinformatics.biom
 
 ## News
 
-## 3.4.1 - 2025-07-30
+## 3.4.2 - 2025-09-01
 
-- Changed the `-max_target_seqs` value used by the [select_representatives](https://github.com/B-UMMI/chewBBACA/blob/69afd188be8637f5f5adfcf03dc5b1129b91d69b/CHEWBBACA/AlleleCall/allele_call.py#L1750) function to the square of the number of potential new representative alleles or to a minimum of 100. This change tries to fix an issue where BLASTp would not report the self-alignment for some alleles because it reached the limit of the number of alignments to report before reporting all self-alignments (e.g. for very large datasets, the number of potential new representatives may lead to a number of alignments that exceeds the value passed to `-max_target_seqs`).
+- Fixed issue in the ExtractCgMLST module related to using the deprecated Plotly *titlefont* attribute. Support for the *titlefont* attribute was dropped in [Plotly v6.0.0](https://github.com/plotly/plotly.py/releases/tag/v6.0.0). The ExtractCgMLST module would exit with an error and fail to generate the HTML plot if Plotly >= v6.0.0 was installed.
+
+- The LoadSchema module no longer queries UniProt's SPARQL endpoint to retrieve annotations. The current implementation was failing to retrieve annotations. Users should use the UniprotFinder module or the annotation functionalities provided by [Schema Refinery](https://github.com/B-UMMI/Schema_Refinery) to annotate the schema loci and create a TSV file with annotations to submit to Chewie-NS.
 
 Check our [Changelog](https://github.com/B-UMMI/chewBBACA/blob/master/CHANGELOG.md) to learn about the latest changes.
 

@@ -37,7 +37,6 @@ from urllib3.exceptions import InsecureRequestWarning
 try:
 	from utils import (constants as ct,
 					   file_operations as fo,
-					   uniprot_requests as ur,
 					   chewiens_requests as cr,
 					   fasta_operations as fao,
 					   parameters_validation as pv,
@@ -45,7 +44,6 @@ try:
 except ModuleNotFoundError:
 	from CHEWBBACA.utils import (constants as ct,
 								 file_operations as fo,
-								 uniprot_requests as ur,
 								 chewiens_requests as cr,
 								 fasta_operations as fao,
 								 parameters_validation as pv,
@@ -762,8 +760,8 @@ def main(schema_directory, species_id, schema_name, loci_prefix,
 		file.
 	annotations : str
 		Path to a TSV file with loci annotations. The first column has
-		loci identifiers (w/o .fasta extension), the second has Uniprot labels,
-		the third has Uniprot URIs, the fourth has user
+		loci identifiers (w/o .fasta extension), the second has UniProt labels,
+		the third has UniProt URIs, the fourth has user
 		annotations, and the fifth has custom annotations.
 	cpu_cores : int
 		Number of CPU cores that will be used in the pre-processing steps.

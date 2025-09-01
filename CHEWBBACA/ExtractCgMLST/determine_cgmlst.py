@@ -358,17 +358,17 @@ def main(input_file, output_directory, threshold, step,
     fig = go.Figure(data=line_traces)
     fig.update_layout(title={'text': 'Number of loci in cgMLST',
                              'font_size': 30},
-                      xaxis_title='Number of genomes',
-                      yaxis_title='Number of loci',
                       template='simple_white',
-                      hovermode='x')
-    fig.update_xaxes(range=[0, len(sorted_genomes)],
-                     tickfont=dict(size=18),
-                     titlefont=dict(size=20),
-                     showgrid=True)
-    fig.update_yaxes(tickfont=dict(size=18),
-                     titlefont=dict(size=20),
-                     showgrid=True)
+                      hovermode='x',
+                      yaxis=dict(title=dict(text='Number of loci', font=dict(size=20)),
+                                      tickfont=dict(size=18),
+                                      showgrid=True),
+                      xaxis=dict(title=dict(text='Number of genomes', font=dict(size=20)),
+                                      tickfont=dict(size=18),
+                                      showgrid=True,
+                                      range=[0, len(sorted_genomes)])
+                    )
+ 
     output_html = os.path.join(output_directory, 'cgMLST.html')
     plot(fig, filename=output_html, auto_open=False)
     print('HTML file with cgMLST per loci presence threshold '

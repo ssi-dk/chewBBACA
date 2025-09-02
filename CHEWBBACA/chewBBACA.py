@@ -1391,11 +1391,11 @@ def run_upload_schema():
 
 	parser.add_argument('--a', '--annotations', type=str,
 						required=False, dest='annotations', default=None,
-						help='Path to a TSV file with loci annotations. '
-							 'The first column has loci identifiers (w/o .fasta '
-							 'extension), the second has UniProt labels,'
-							 ' the third has UniProt URIs, the fourth has user '
-							 'annotations, and the fifth has custom annotations.')
+						help='Path to a TSV file with loci annotations. The first column has '
+							 'loci identifiers (w/o .fasta extension), the second has UniProt '
+							 'protein names, the third has UniProt gene names, the fourth has '
+							 'UniProt URIs, the fifth has user annotations, and the sixth has '
+							 'custom annotations.')
 
 	parser.add_argument('--cpu', '--cpu-cores', type=pv.verify_cpu_usage,
 						required=False, dest='cpu_cores', default=1,

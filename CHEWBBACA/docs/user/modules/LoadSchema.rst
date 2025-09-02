@@ -61,27 +61,30 @@ Sample description:
     For more information please access [external page](https://external/page)
     (If there is any external source with more information, link it here)
 
-The process queries UniProt's SPARQL endpoint to retrieve annotations for the loci in the schema. The user that uploads the schema can provide a TSV file with annotations for some or all  loci in the schema. The file with annotations must have the following structure:
+The process queries UniProt's SPARQL endpoint to retrieve annotations for the loci in the schema. The user that uploads the schema can provide a TSV file with annotations for some or all loci in the schema. The file with annotations must have the following columns:
 
 	- First column: locus identifier (name of locus file without ``.fasta`` extension).
-	- Second column: user annotation (name commonly attributed by the user).
-	- Third column: custom annotation (another term that the user might want to attribute).
+	- Second column: UniProt protein name.
+	- Third column: UniProt gene name.
+	- Fourth column: URI for the UniProt entry.
+	- Fifth column: user annotation (name commonly attributed by the user).
+	- Sixth column: custom annotation (another term that the user might want to attribute).
 
 However, no headers are necessary.
 
 .. rst-class:: align-center
 
-	+----------+--------------+---------------------------------------------------+
-	| locus_1  |     dnaA     |  Chromosomal replication  initiator protein DnaA  |
-	+----------+--------------+---------------------------------------------------+
-	| locus_2  |     dnaG     |                    DNA primase                    |
-	+----------+--------------+---------------------------------------------------+
-	| locus_3  |              |            RNA-directed DNA polymerase            |
-	+----------+--------------+---------------------------------------------------+
-	| locus_4  |     pbp      |                                                   |
-	+----------+--------------+---------------------------------------------------+
+	+--------+-----------------------------------------+----------+------------------------------------------------+-------+---------------------------------------------------------------------------------+
+	| locus1 | Penicillin-binding protein 1B, putative |          | https://www.uniprot.org/uniprotkb/Q8E240/entry | pbp1b | Penicillin-binding protein 1B                                                   |
+	+--------+-----------------------------------------+----------+------------------------------------------------+-------+---------------------------------------------------------------------------------+
+	| locus1 | Penicillin-binding protein 2A           |          | https://www.uniprot.org/uniprotkb/Q8DWZ3/entry | pbp2a | Penicillin-binding protein 2A                                                   |
+	+--------+-----------------------------------------+----------+------------------------------------------------+-------+---------------------------------------------------------------------------------+
+	| locus1 | Cell wall surface anchor family protein |          | https://www.uniprot.org/uniprotkb/Q8DYR5/entry | PI-2a | PI-2a ancillary protein 1                                                       |
+	+--------+-----------------------------------------+----------+------------------------------------------------+-------+---------------------------------------------------------------------------------+
+	| locus1 | Laminin-binding surface protein         |          | https://www.uniprot.org/uniprotkb/Q8DZ80/entry | lmb   | metal ABC transporter substrate-binding lipoprotein/laminin-binding adhesin Lmb |
+	+--------+-----------------------------------------+----------+------------------------------------------------+-------+---------------------------------------------------------------------------------+	
 
-It is not necessary to provide both annotation types for each locus nor for every locus. If no information is provided N/A will be automatically shown in the locus details page in Chewie-NS.
+It is not necessary to provide all annotation types for each locus nor for every locus. If no information is provided N/A will be automatically shown in the locus details page in Chewie-NS.
 
 Basic Usage
 -----------
@@ -135,9 +138,10 @@ Parameters
                                 of the rendered description in the Frontend. Will default to the schema's
                                 name if the user does not provide a valid path for a file (default: None).
 
-    --a, --annotations          (Optional) Path to a TSV file with loci annotations. The first column
-                                has loci identifiers (w/o .fasta extension), the second has user
-                                annotations and the third has custom annotations (default: None).
+    --a, --annotations          (Optional) Path to a TSV file with loci annotations. The first column has
+                                loci identifiers (w/o .fasta extension), the second has UniProt protein names,
+                                the third has UniProt gene names, the fourth has UniProt URIs, the fifth has
+                                user annotations, and the sixth has custom annotations. (default: None).
 
     --cpu, --cpu-cores          (Optional) Number of CPU cores/threads that will be used to run the process
                                 (chewie resets to a lower value if it is equal to or exceeds the total

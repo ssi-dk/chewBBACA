@@ -30,7 +30,6 @@ import hashlib
 import requests
 import itertools
 import multiprocessing
-import concurrent.futures
 
 from urllib3.exceptions import InsecureRequestWarning
 
@@ -86,19 +85,11 @@ def import_annotations(tsv_file):
 	"""
 	# Read TSV file containing annotations
 	lines = fo.read_tabular(tsv_file)
+	annotations = {line[0]: line[1:] for line in lines}
 
-	# Add N/A to lines with missing fields (this does not add N/A to blank fields)
-	lines = [line + ['N/A']*(3-len(line)) for line in lines]
-
-	annotations = {}
-	for line in lines:
-		locus = line[0]
-		# Substitute blank fields with N/A
-		a = ['N/A' if i.strip() == '' else i for i in line[1:]]
-
-		# Only keep the annotations for a locus if it has at least one non-NA field
-		if a[0] != 'N/A' or a[1] != 'N/A':
-			annotations[locus] = a
+	# Substitute blank fields by N/A
+	for l, a in annotations.items():
+		annotations[l] = [t if t != '' else 'N/A' for t in a]
 
 	return annotations
 
@@ -760,9 +751,9 @@ def main(schema_directory, species_id, schema_name, loci_prefix,
 		file.
 	annotations : str
 		Path to a TSV file with loci annotations. The first column has
-		loci identifiers (w/o .fasta extension), the second has UniProt labels,
-		the third has UniProt URIs, the fourth has user
-		annotations, and the fifth has custom annotations.
+		loci identifiers (w/o .fasta extension), the second has UniProt protein names,
+        the third has UniProt gene names, the fourth has UniProt URIs, the fifth has
+		user annotations, and the sixth has custom annotations.
 	cpu_cores : int
 		Number of CPU cores that will be used in the pre-processing steps.
 	nomenclature_server : str

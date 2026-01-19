@@ -1840,6 +1840,7 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	
 	# Convert to binary format if BLAST>=2.10
 	binary_file = f'{ids_file}.bin'
+	print(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blastdb_aliastool function")
 	blastp_std = bw.run_blastdb_aliastool(blastdb_aliastool_path,
 											ids_file,
 											binary_file)
@@ -1864,6 +1865,7 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	
 	max_hsps = config['BLAST max hsps']
 	evalue = config['BLAST evalue']
+	print(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blast function")
 
 	blastp_std = bw.run_blast(
 		blastp_path,
@@ -2412,11 +2414,30 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			concat_full_reps = concat_reps
 		self_score_dir = fo.join_paths(reps_protein_dir, ['self_scores'])
 		fo.create_directory(self_score_dir)
-		self_scores = cf.determine_self_scores(concat_full_reps, self_score_dir,
-											   makeblastdb_path, blastp_path,
-											   'prot',
-											   config['CPU cores'],
-											   blastdb_aliastool_path)
+		
+		### NOTE 3 - For now we're defining the same values as further down for run blast, change this in a future commit to only define it once
+		### NOTE 3 - changing max_target_seqs to accomodate new parameters
+		if config['BLAST max target seqs'] is None:
+			# However, runtime can also increase a lot when processing some datasets
+			max_targets_value = 500
+		else: 
+			max_targets_value = config['BLAST max target seqs']
+			
+		max_hsps = config['BLAST max hsps']
+		evalue = config['BLAST evalue']
+		threads = config['CPU cores']
+		print(f"[DEBUG BLAST] - within allele_calling function before running determine_self_scores which  calles blast wrapper run_blast function")
+
+		self_scores = cf.determine_self_scores(concat_full_reps,
+										 		self_score_dir,
+												makeblastdb_path,
+												blastp_path,
+												'prot',
+												threads,
+												blastdb_aliastool_path,
+												max_hsps,
+												max_targets_value,
+												evalue)
 
 		print(f"[DEBUG] self_scores: type={type(self_scores)}, None? {self_scores is None}, length={len(self_scores) if self_scores is not None else 'N/A'}")
 
@@ -2496,15 +2517,31 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# BLASTp if there are clusters with n>1
 	excluded = []
 	if len(clusters) > 0:
+		### Note - redundancy
+		if config['BLAST max target seqs'] is None:
+			# However, runtime can also increase a lot when processing some datasets
+			max_targets_value = 500
+		else: 
+			max_targets_value = config['BLAST max target seqs']
+			
+		max_hsps = config['BLAST max hsps']
+		evalue = config['BLAST evalue']
+		threads = config['CPU cores']
+
 		# BLAST representatives against clustered sequences
 		print('Aligning cluster representatives against clustered proteins...')
 		blast_results, blast_results_dir = cf.blast_clusters(clusters, all_prots,
-															 clustering_dir, blastp_path,
-															 makeblastdb_path,
-															 config['CPU cores'],
-															 blastdb_aliastool_path,
-															 True)
+															clustering_dir, blastp_path,
+															makeblastdb_path,
+															config['CPU cores'],
+															blastdb_aliastool_path,
+															True,
+															threads,
+															max_hsps,
+															max_targets_value,
+															evalue)
 
+		print('[DEBUG] - AFTER BLAST CLUSTER')
 		blast_files = im.flatten_list(blast_results)
 
 		# Concatenate files based on locus identifier included in file paths
@@ -2634,6 +2671,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		remaining_seqids_file = fo.join_paths(iteration_directory, ['unclassified_seqids_{0}.txt'.format(iteration)])
 		fo.write_lines(unclassified_seqids, remaining_seqids_file)
 		binary_file = f'{remaining_seqids_file}.bin'
+
+		print(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blastdb_aliastool function")
 		blastp_std = bw.run_blastdb_aliastool(blastdb_aliastool_path,
 												remaining_seqids_file,
 												binary_file)
@@ -2674,13 +2713,16 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			max_hsps = config['BLAST max hsps']
 			evalue = config['BLAST evalue']
 			
+			threads = config['CPU cores']
+			print(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blast function")
+
 			blast_inputs.append([
 				blastp_path,
 				blast_db,
 				file,
 				outfile,
-				max_hsps,                     # threads here was already 1 in your code
-				1,                     # keep your existing positional arg as-is
+				max_hsps,               # threads here was already 1 in your code
+				threads,                     # keep your existing positional arg as-is
 				remaining_seqids_file, # ids_file
 				'blastp',
 				max_targets_value, # was 500
@@ -2864,10 +2906,29 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			# Determine self-score for new reps
 			candidates_blast_dir = fo.join_paths(new_reps_directory, ['representatives_self_score'])
 			fo.create_directory(candidates_blast_dir)
-			new_self_scores = cf.determine_self_scores(concat_repy, candidates_blast_dir,
-													   makeblastdb_path, blastp_path,
-													   'prot', config['CPU cores'],
-													   blastdb_aliastool_path)
+
+			### NOTE 4 - Consider changing this later on, again its redundant, but keep it for now for checks
+			if config['BLAST max target seqs'] is None:
+				# However, runtime can also increase a lot when processing some datasets
+				max_targets_value = 500
+			else: 
+				max_targets_value = config['BLAST max target seqs']
+				
+			max_hsps = config['BLAST max hsps']
+			evalue = config['BLAST evalue']
+			threads = config['CPU cores']
+			print(f"[DEBUG BLAST] - within allele_calling function before running determine_self_scores which calls blast wrapper run_blast function")
+
+			new_self_scores = cf.determine_self_scores(concat_repy,
+										 		candidates_blast_dir,
+												makeblastdb_path,
+												blastp_path,
+												'prot',
+												threads,
+												blastdb_aliastool_path,
+												max_hsps,
+												max_targets_value,
+												evalue)
 
 			# This includes self-score for candidates that are not added
 			# (e.g. classification changes due to multiple matches)

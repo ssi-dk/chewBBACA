@@ -18,6 +18,8 @@ import csv
 import sys
 import math
 from collections import Counter
+import binascii
+import pickle
 
 try:
 	from utils import (constants as ct,
@@ -41,6 +43,29 @@ except ModuleNotFoundError:
 								 sequence_manipulation as sm,
 								 iterables_manipulation as im,
 								 multiprocessing_operations as mo)
+
+def valid_self_score(val):
+    return (isinstance(val, (list, tuple))
+            and len(val) >= 2
+            and val[0] not in (None, 0)
+            and val[1] not in (None, 0))
+
+def persist_self_scores(self_scores, self_score_file):
+	"""
+	Save cleaned self_scores if non-empty; otherwise remove any existing file.
+	Returns the cleaned dict (or {} if empty/invalid).
+	"""
+	# keep only entries like {id: (len, raw_score)} with both non-zero/None
+	clean = {k: v for k, v in (self_scores or {}).items() if valid_self_score(v)}
+	if clean:
+		fo.pickle_dumper(clean, self_score_file)
+	else:
+		# remove stale file if it exists
+		try:
+			os.remove(self_score_file)
+		except FileNotFoundError:
+			pass
+	return clean
 
 
 def compute_loci_modes(loci_files, output_file):
@@ -1114,14 +1139,24 @@ def assign_allele_ids(locus_files, ns, repeated, output_directory, loci_finder):
 	"""
 	# Dictionary to store new allele identifiers
 	novel_alleles = []
+	#print(f"[DEBUG] novel_alleles: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+
 	total_novel = 0
 	# Import allele calling results
 	locus_id = loci_finder.search(locus_files[0]).group()
 	locus_results = fo.pickle_loader(locus_files[1])
+
+	#print(f"[DEBUG] locus_id: type={type(locus_id)}, None? {locus_id is None}, length={len(locus_id) if locus_id is not None else 'N/A'}")
+	#print(f"[DEBUG] locus_results: type={type(locus_results)}, None? {locus_results is None}, length={len(locus_results) if locus_results is not None else 'N/A'}")
+	
 	# Sort by input order
 	sorted_results = sorted(locus_results.items(), key=lambda x: x[0])
+	#print(f"[DEBUG] sorted_results: type={type(sorted_results)}, None? {sorted_results is None}, length={len(sorted_results) if sorted_results is not None else 'N/A'}")
+
 	# Only keep INF and EXC classifications
 	sorted_results = [r for r in sorted_results if r[1][0] in ['EXC', 'INF']]
+	#print(f"[DEBUG] sorted_results after INF and EXC: type={type(sorted_results)}, None? {sorted_results is None}, length={len(sorted_results) if sorted_results is not None else 'N/A'}")
+
 	# Sort to get INF classifications first
 	sorted_results = sorted(sorted_results,
 							key=lambda x: x[1][0] == 'INF',
@@ -1173,6 +1208,9 @@ def assign_allele_ids(locus_files, ns, repeated, output_directory, loci_finder):
 	if len(novel_alleles) > 0:
 		novel_outfile = fo.join_paths(output_directory, [f'{locus_id}'])
 		fo.pickle_dumper(novel_alleles, novel_outfile)
+
+		print(f"[DEBUG] novel_alleles after pickle_dumper: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+
 		return [locus_files[0], novel_outfile, total_novel]
 
 
@@ -1228,14 +1266,19 @@ def create_novel_fastas(inferred_alleles, inferred_representatives,
 		novel_alleles = ['>{0}_{1}\n{2}'.format(locus_id, a[1],
 												str(sequence_index.get(a[2]).seq))
 						 for a in current_novel]
+		print(f"[DEBUG] novel_alleles after index: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+
 		# Create Fasta file with novel alleles
 		novel_file = fo.join_paths(output_directory, ['{0}.fasta'.format(locus_id)])
 		fo.write_lines(novel_alleles, novel_file)
 		updated_novel[locus_novel[0]].append(novel_file)
 		total_inferred += len(novel_alleles)
+		print(f"[DEBUG] total_inferred after novel_alleles: {total_inferred}")
 
 		# Add representatives
 		novel_representatives = inferred_representatives.get(locus_id, None)
+		print(f"[DEBUG] novel_representatives afer inferred: type={type(novel_representatives)}, None? {novel_representatives is None}, length={len(novel_representatives) if novel_representatives is not None else 'N/A'}")
+
 		if novel_representatives is not None:
 			reps_sequences = ['>{0}_{1}\n{2}'.format(locus_id, a[2], str(sequence_index.get(a[0]).seq))
 							  for a in novel_representatives]
@@ -1353,6 +1396,7 @@ def process_blast_results(blast_results, bsr_threshold, query_scores):
 		# Might fail if it is not possible to get the query self-score
 		try:
 			bsr = cf.compute_bsr(raw_score, query_scores[query_id][1])
+			print(f"[DEBUG] calculated bsr :{bsr}")
 		except Exception as e:
 			print('Could not get the self-score for the representative '
 				  f'allele {query_id}', e)
@@ -1367,6 +1411,7 @@ def process_blast_results(blast_results, bsr_threshold, query_scores):
 
 			match_info[target_id] = (bsr, qstart, qend,
 									 target_length, query_length, query_id)
+			print(f"[DEBUG] filtered bsr :{bsr}")
 
 	return match_info
 
@@ -1792,6 +1837,8 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	ids_file = fo.join_paths(output_directory,
 							 ['{0}_candidates_ids_{1}.fasta'.format(locus, iteration)])
 	fo.write_lines(list(representative_candidates.keys()), ids_file)
+	print(f"[DEBUG] representative_candidates before binary: type={type(representative_candidates)}, None? {representative_candidates is None}, length={len(representative_candidates) if representative_candidates is not None else 'N/A'}")
+	
 	# Convert to binary format if BLAST>=2.10
 	binary_file = f'{ids_file}.bin'
 	blastp_std = bw.run_blastdb_aliastool(blastdb_aliastool_path,
@@ -1825,6 +1872,9 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	# Compute BSR
 	for line in blast_results:
 		line.append(cf.compute_bsr(float(line[6]), candidates_self_scores[line[0]][1]))
+
+	print(f"[DEBUG] blast_results: type={type(blast_results)}, None? {blast_results is None}, length={len(blast_results) if blast_results is not None else 'N/A'}")
+
 	# Sort by sequence length to process longest candidates first
 	blast_results = sorted(blast_results, key=lambda x: int(x[3]))
 
@@ -1834,6 +1884,7 @@ def select_representatives(representative_candidates, locus, fasta_file,
 			excluded_candidates.add(r[4])
 
 	selected_candidates = set(representative_candidates.keys()) - excluded_candidates
+	print(f"[DEBUG] selected_candidates: type={type(selected_candidates)}, None? {selected_candidates is None}, length={len(selected_candidates) if selected_candidates is not None else 'N/A'}")
 
 	selected = [(seqid, representative_candidates[seqid]) for seqid in selected_candidates]
 
@@ -2097,6 +2148,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# Create directory to store files with classification results
 	classification_dir = fo.join_paths(temp_directory, ['classification_files'])
 	fo.create_directory(classification_dir)
+	print(f"Succesfully created directory? {classification_dir}")
+
 	# Create files with empty dict to store results per locus
 	empty_results = {}
 	classification_files = {}
@@ -2106,7 +2159,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		classification_files[file] = file_path
 
 	# CDS exact matching
-	print(f'\n {ct.CDS_EXACT} ')
+	print(f'[INFO] matching CDS : \n {ct.CDS_EXACT} ')
 	print('='*(len(ct.CDS_EXACT)+2))
 
 	matched_seqids = []
@@ -2161,10 +2214,17 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 	# User only wants to determine exact matches or all sequences were classified
 	if config['Mode'] == 1 or len(unclassified_seqids) == 0:
+		if len(unclassified_seqids) == 0:
+			print('[INFO] All CDSs matched exactly at DNA level; skipping translation and invalid-CDS stage.')
+	
 		template_dict['classification_files'] = classification_files
 		template_dict['protein_fasta'] = distinct_file
 		template_dict['unclassified_ids'] = unclassified_seqids
 		template_dict['representatives'] = {}
+
+		print(f"[DEBUG] exact match - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
+		print(f"[DEBUG] exact match - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
+		print(f"[DEBUG] exact match - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
 
 		return template_dict
 
@@ -2205,6 +2265,10 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		template_dict['protein_fasta'] = distinct_file
 		template_dict['unclassified_ids'] = unclassified_seqids
 		template_dict['representatives'] = {}
+
+		print(f"[DEBUG] excluded translation - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
+		print(f"[DEBUG] excluded translation - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
+		print(f"[DEBUG] excluded translation - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
 
 		return template_dict
 
@@ -2318,6 +2382,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 	# Determine self-score for representatives if file is missing
 	self_score_file = fo.join_paths(schema_directory, ['short', 'self_scores'])
+	print(f"[DEBUG] self score exist? : {os.path.isfile(self_score_file)}")
+
 	if os.path.isfile(self_score_file) is False:
 		print('Determining BLASTp self-score for each representative...')
 		# Determine for all loci, not just target loci
@@ -2333,9 +2399,25 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 											   'prot',
 											   config['CPU cores'],
 											   blastdb_aliastool_path)
-		fo.pickle_dumper(self_scores, self_score_file)
+
+		print(f"[DEBUG] self_scores: type={type(self_scores)}, None? {self_scores is None}, length={len(self_scores) if self_scores is not None else 'N/A'}")
+
+		# persist or delete file as needed
+		#self_scores = persist_self_scores(self_scores, self_score_file)
+		self_scores = {k: v for k, v in (self_scores or {}).items() if valid_self_score(v)}
+		print(f"[DEBUG] self_scores (sanitized, in-memory only): n={len(self_scores)}")
+
+		#fo.pickle_dumper(self_scores, self_score_file)
 	else:
+		# Load existing file but do not re-write it here
 		self_scores = fo.pickle_loader(self_score_file)
+		print(f"[DEBUG] loaded self_scores from disk: type={type(self_scores)}, len={len(self_scores) if isinstance(self_scores, dict) else 'N/A'}")
+		# sanity check
+		self_scores = {k: v for k, v in (self_scores or {}).items() if valid_self_score(v)}
+		print(f"[DEBUG] self_scores (sanitized from disk): n={len(self_scores)}")
+
+		#self_scores = persist_self_scores(self_scores, self_score_file)
+
 	print(f'Representative BLASTp self-scores stored in {self_score_file}')
 
 	# Create Kmer index for representatives
@@ -2749,6 +2831,10 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	template_dict['self_scores'] = self_scores
 	template_dict['representatives'] = new_reps
 
+	print(f"[DEBUG] final return - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
+	print(f"[DEBUG] final return - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
+	print(f"[DEBUG] final return - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
+
 	return template_dict
 
 
@@ -2879,6 +2965,9 @@ def main(input_file, loci_list, schema_directory, output_directory,
 											  mo.function_helper,
 											  config['CPU cores'],
 											  show_progress=False)
+	
+	print(f"[DEBUG] novel_alleles map_async_parallelizer: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+
 	# Only keep data for loci that have novel alleles
 	novel_alleles = [r for r in novel_alleles if r is not None]
 	novel_alleles_count = sum([locus_novel[2] for locus_novel in novel_alleles])
@@ -2897,8 +2986,18 @@ def main(input_file, loci_list, schema_directory, output_directory,
 			fo.pickle_dumper(current_novel, locus_novel[1])
 
 		reps_info = {}
+		print(f"[DEBUG] before mode 4 - reps_info = {type(reps_info)} and length {len(reps_info)}")
 		if config['Mode'] == 4:
 			print('Getting data for new representative alleles...')
+
+			print(f"[DEBUG] about to dump representatives: type={type(results['representatives'])}, "
+				f"is None? {results['representatives'] is None}, "
+				f"len={len(results['representatives']) if results['representatives'] is not None else 'N/A'}")
+
+			print(f"[DEBUG] about to dump novel_alleles: type={type(novel_alleles)}, "
+				f"is None? {novel_alleles is None}, "
+				f"len={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+			
 			# Get info for new representative alleles that must be added to files in the short directory
 			for locus_novel in novel_alleles:
 				locus_id = loci_finder.search(locus_novel[1]).group()
@@ -2908,28 +3007,88 @@ def main(input_file, loci_list, schema_directory, output_directory,
 					for e in current_results:
 						allele_id = [line[1] for line in current_novel if line[0] == e[1]]
 						# We might have representatives that were converted to NIPH but still appear in the list
+						print(f"[DEBUG] inside mode 4 - allele_id = {type(allele_id)} and length {len(allele_id)}")
 						if len(allele_id) > 0:
 							reps_info.setdefault(locus_id, []).append(list(e)+allele_id)
 
+			#major changes for sanity checks as the updated self-score files influence the representative and candidates, and when issues arose for the previous code would still update the self-scores with a negative effect
 			if no_inferred is False:
 				self_score_file = fo.join_paths(schema_directory, ['short', 'self_scores'])
-				print(f'Adding the BLASTp self-score for the new representatives to {self_score_file}')
-				# Update self_scores
-				reps_to_del = set()
-				for k, v in reps_info.items():
-					for r in v:
-						new_id = k+'_'+r[-1]
-						results['self_scores'][new_id] = results['self_scores'][r[0]]
-						# Delete old entries
-						# Does not delete entries from representative candidates that were converted to NIPH
-						if r[0] not in reps_to_del:
-							reps_to_del.add(r[0])
 
-				for r in reps_to_del:
-					del results['self_scores'][r]
+				print(f'[DEBUG] no_inferred is False - Adding the BLASTp self-score for the new representatives to {self_score_file}')
+				
+				has_new_reps = any(reps_info.values()) if isinstance(reps_info, dict) else False
+				has_new_self_scores = isinstance(results.get('self_scores'), dict) and len(results['self_scores']) > 0
 
-				# Save updated self-scores
-				fo.pickle_dumper(results['self_scores'], self_score_file)
+				if not has_new_reps and not has_new_self_scores:
+					print("[INFO] No new representatives and no new self_scores calculated; leaving existing self_scores file untouched.")
+				else:
+					# Start from existing on-disk self_scores (if any), so we only merge / update.
+					base_scores = {}
+					if os.path.isfile(self_score_file):
+						loaded = fo.pickle_loader(self_score_file)
+						if isinstance(loaded, dict):
+							base_scores = loaded
+						print(f"[DEBUG] loaded self_scores from disk: type={type(base_scores)}, len={len(base_scores)}")
+					else:
+						print("[DEBUG] self_scores file not found on disk; starting with empty dict")
+	
+					# Merge in any newly computed scores (if present)
+					if has_new_self_scores:
+						print(f"[DEBUG] merging {len(results['self_scores'])} new self_scores entries")
+						for k, v in results['self_scores'].items():
+							base_scores[k] = v
+
+					# If there are new reps, remap their IDs to the new allele IDs and copy scores
+					if has_new_reps:
+						reps_to_del = set()
+						print(f"[DEBUG] reps_info type={type(reps_info)}, len={len(reps_info)}")
+
+						for locus_id, entries in reps_info.items():
+							print("[DEBUG] if reps info is empty does it enter this step and thus results['self_scores'] is not set therefore None")
+							for r in entries:
+								# r[0] = old representative seqid; r[-1] = new allele numeric id
+								old_id = r[0]
+								new_id = locus_id + '_' + r[-1]
+								print(f"[DEBUG] remapping old_id={old_id} → new_id={new_id}")
+								if old_id in base_scores:
+									print(f"[DEBUG] base_scores[{old_id}] = {base_scores[old_id]}")
+								else:
+									print(f"[DEBUG] old_id {old_id} not found in base_scores")
+
+								# Copy old self-score forward if present
+								if old_id in base_scores and valid_self_score(base_scores[old_id]):
+									base_scores[new_id] = base_scores[old_id]
+									reps_to_del.add(old_id)
+						
+						# Drop old ids we cloned from (don’t break other workflows)
+						for old_id in reps_to_del:
+							if old_id in base_scores:
+								del base_scores[old_id]
+						
+						print(f"[DEBUG] removed {len(reps_to_del)} old representative IDs")
+
+					# Final sanitize: keep only valid (len, score) tuples
+					before_len = len(base_scores)
+					base_scores = {k: v for k, v in (base_scores or {}).items() if valid_self_score(v)}
+					print(f"[DEBUG] sanitized self_scores: before={before_len}, after={len(base_scores)}")
+
+					if base_scores:
+						fo.pickle_dumper(base_scores, self_score_file)
+						print(f"[INFO] self_scores updated with {len(base_scores)} entries at {self_score_file}.")
+					else:
+						# IMPORTANT: per requirement, do NOT remove or create the file
+						print("[INFO] No valid self_scores to write; existing file left unchanged.")
+
+					# Only peek at the on-disk pickle if we actually wrote/updated it now
+					if base_scores and (has_new_reps or has_new_self_scores):
+						try:
+							with open(self_score_file, "rb") as f:
+								raw_bytes = f.read()
+							decoded = pickle.loads(raw_bytes)
+							print(f"[DEBUG] reloaded self_scores: type={type(decoded)}, is None? {decoded is None}, len={len(decoded)}")
+						except Exception as e:
+							print(f"[WARN] could not re-load self_scores ({e}).")
 
 		if len(novel_alleles) > 0:
 			print('Creating FASTA files with the new alleles...')

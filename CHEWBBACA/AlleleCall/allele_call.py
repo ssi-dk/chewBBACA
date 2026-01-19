@@ -2140,6 +2140,25 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 	print(f'Unclassified CDSs: {len(unclassified_seqids)}')
 
+	"""
+	NOTE 1: We get the following error mentioned later. It appears in the log
+
+	 CDS exact matching
+	====================
+	Searching for CDS exact matches...
+	Found 1753 exact matches (1753 distinct schema alleles).
+	Unclassified CDSs: 0
+
+	then skips translation and goes to
+
+	Wrapping up
+
+	so it skips translation and never appears to set results['invalid_alleles'] creating the error described further down
+
+	fo.move_file(results['invalid_alleles'][0], output_directory)
+	TypeError: 'NoneType' object is not subscriptable
+	"""
+
 	# User only wants to determine exact matches or all sequences were classified
 	if config['Mode'] == 1 or len(unclassified_seqids) == 0:
 		template_dict['classification_files'] = classification_files
@@ -3018,7 +3037,9 @@ def main(input_file, loci_list, schema_directory, output_directory,
 
 	# Move file with list of excluded CDS
 	# File is not created if we only search for exact matches
-	if config['Mode'] != 1:
+	
+	# Solution for the aformentioned error - TypeError: 'NoneType' object is not subscriptable (NOTE 1) - adding and results.get('invalid_alleles')
+	if config['Mode'] != 1 and results.get('invalid_alleles'):
 		print(f'Creating file with invalid CDSs ({ct.INVALID_CDS_BASENAME})...')
 		fo.move_file(results['invalid_alleles'][0], output_directory)
 

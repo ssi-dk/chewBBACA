@@ -108,8 +108,8 @@ def determine_blast_task(sequences, blast_type='blastp'):
 
 
 def run_blast(blast_path, blast_db, fasta_file, blast_output,
-			  max_hsps=1, threads=1, ids_file=None, blast_task=None,
-			  max_targets=None, composition_stats=None):
+			  max_hsps=None, threads=1, ids_file=None, blast_task=None,
+			  max_targets=None, evalue=None, composition_stats=None):
 	"""Execute BLAST to align sequences against a BLAST database.
 
 	Parameters
@@ -150,24 +150,39 @@ def run_blast(blast_path, blast_db, fasta_file, blast_output,
 	stderr : bytes or str
 		BLAST stderr.
 	"""
-	# Do not retrieve hits with high probability of occuring by chance
-	blast_args = [blast_path, '-db', blast_db, '-query', fasta_file,
-				  '-out', blast_output, '-outfmt', ct.BLAST_DEFAULT_OUTFMT,
-				  '-max_hsps', str(max_hsps), '-num_threads', str(threads),
-				  '-evalue', '0.001']
 
-	# Add file with list of sequence identifiers to align against
+	# NOTE 1 change blast command to accomodate new parameters
+
+	# Base args and outfmt; keep this minimal to avoid forcing defaults
+	blast_args = [
+		blast_path, '-db', blast_db,
+		'-query', fasta_file,
+		'-out', blast_output,
+		'-outfmt', ct.BLAST_DEFAULT_OUTFMT,  # keep your existing outfmt
+		'-num_threads', str(threads)
+	]
+
+	# Only add optional flags if user/config provided a value 
 	if ids_file is not None:
 		blast_args.extend(['-seqidlist', ids_file])
-	# Add type of BLASTp or BLASTn task
+
 	if blast_task is not None:
 		blast_args.extend(['-task', blast_task])
-	# Add maximum number of target sequences to align against
+
+	if max_hsps is not None:
+		blast_args.extend(['-max_hsps', str(max_hsps)])
+
 	if max_targets is not None:
 		blast_args.extend(['-max_target_seqs', str(max_targets)])
+
 	if composition_stats is not None:
 		blast_args.extend(['-comp_based_stats', str(composition_stats)])
 
+	if evalue is not None:
+		blast_args.extend(['-evalue', str(evalue)])
+
+	print(f"[DEBUG] Running Blast command {blast_args}")
+	   
 	blast_process = subprocess.Popen(blast_args,
 								  stdout=subprocess.PIPE,
 								  stderr=subprocess.PIPE)

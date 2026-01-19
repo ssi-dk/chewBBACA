@@ -1795,7 +1795,7 @@ def create_missing_fasta(class_files, fasta_file, input_map, dna_hashtable,
 def select_representatives(representative_candidates, locus, fasta_file,
 						   iteration, output_directory, blastp_path,
 						   blast_db, blast_score_ratio, threads,
-						   blastdb_aliastool_path):
+						   blastdb_aliastool_path,config):
 	"""Select new representative alleles for a locus.
 
 	Parameters
@@ -1852,14 +1852,31 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	# Define -max_target_seqs to reduce execution time
 	# Defining a value such as 100 or 500, which is the default, may fail if the number of possible alignments exceeds that value
 	# Setting it to the square of the number of representative candidates should match the theoretical limit based on the arguments passed to BLAST
-	# However, runtime can also increase a lot when processing some datasets
-	max_targets_value = len(representative_candidates) ** 2
-	# Set 100 as default if max_target_value is small
-	# This also helps avoid BLAST warning related to 5 or more matches
-	max_targets_value = max_targets_value if max_targets_value > 100 else 100
-	blastp_std = bw.run_blast(blastp_path, blast_db, fasta_file,
-							  blast_output, threads=threads,
-							  ids_file=ids_file, max_targets=max_targets_value)
+	
+	### NOTE 2 - changing max_target_seqs to accomodate new parameter possibility
+	if config['BLAST max target seqs'] is None:
+		# However, runtime can also increase a lot when processing some datasets
+		max_targets_value = len(representative_candidates) ** 2
+		# Set 100 as default if max_target_value is small
+		# This also helps avoid BLAST warning related to 5 or more matches
+		max_targets_value = max_targets_value if max_targets_value > 100 else 100
+	else: 
+		max_targets_value = config['BLAST max target seqs']
+	
+	max_hsps = config['BLAST max hsps']
+	evalue = config['BLAST evalue']
+
+	blastp_std = bw.run_blast(
+		blastp_path,
+		blast_db,
+		fasta_file,
+		blast_output,
+		threads=threads,
+		ids_file=ids_file,
+		max_targets=max_targets_value,
+		max_hsps=max_hsps,
+		evalue=evalue,
+	)
 
 	blast_results = fo.read_tabular(blast_output)
 	# Get self-score for all candidates
@@ -2630,11 +2647,29 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 									[concat_rep_basename+'_blastout_iter{0}.tsv'.format(iteration)])
 			output_files.append(outfile)
 
-			# If max_targets is set to None, BLAST defaults to 500
-			blast_inputs.append([blastp_path, blast_db, file,
-								 outfile, 1, 1,
-								 remaining_seqids_file, 'blastp', 500,
-								 None, bw.run_blast])
+			###NOTE 2 changing max_target_seqs to accomodate new parameters
+			if config['BLAST max target seqs'] is None:
+				# However, runtime can also increase a lot when processing some datasets
+				max_targets_value = 500
+			else: 
+				max_targets_value = config['BLAST max target seqs']
+			
+			max_hsps = config['BLAST max hsps']
+			evalue = config['BLAST evalue']
+			
+			blast_inputs.append([
+				blastp_path,
+				blast_db,
+				file,
+				outfile,
+				max_hsps,                     # threads here was already 1 in your code
+				1,                     # keep your existing positional arg as-is
+				remaining_seqids_file, # ids_file
+				'blastp',
+				max_targets_value, # was 500
+				evalue,      # was None
+				bw.run_blast
+			])
 
 		# BLAST representatives against unclassified sequences
 		blastp_results = mo.map_async_parallelizer(blast_inputs,
@@ -2760,7 +2795,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 					representative_inputs.append([current_candidates, k, fasta_file,
 												  iteration, blast_selection_dir, blastp_path,
 												  blast_db, config['BLAST Score Ratio'], 1,
-												  blastdb_aliastool_path, select_representatives])
+												  blastdb_aliastool_path, config, select_representatives])
 				# Single candidate
 				else:
 					representatives[k] = [(v[0][1], v[0][3])]

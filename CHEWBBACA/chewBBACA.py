@@ -439,8 +439,33 @@ def run_allele_call():
 							 'BSR value, including the determination of new '
 							 'representative alleles to add to the schema).')
 
+	parser.add_argument('--blast-max-target-seqs',
+						type=int, required=False, default=None,
+						dest='blast_max_target_seqs',
+						help='Pass through to blastp as -max_target_seqs.')
+
+	parser.add_argument('--blast-max-hsps',
+						type=int, required=False, default=None,
+						dest='blast_max_hsps',
+						help='Pass through to blastp as -max_hsps.')
+
+	parser.add_argument('--blast-evalue',
+						type=float, required=False, default=None,
+						dest='blast_evalue',
+						help='Pass through to blastp as -evalue.')
+
 	args = parser.parse_args()
 
+	### NOTE 1 - sanity checks for blastp options - to ensure we can accurately use them for testing when doing chewbbaca exact matches of debugging
+	if args.blast_max_target_seqs is not None and args.blast_max_target_seqs < 1:
+		sys.exit('ERROR: --blast-max-target-seqs must be >= 1')
+
+	if args.blast_max_hsps is not None and args.blast_max_hsps < 1:
+		sys.exit('ERROR: --blast-max-hsps must be >= 1')
+
+	if args.blast_evalue is not None and args.blast_evalue <= 0:
+		sys.exit('ERROR: --blast-evalue must be > 0')
+	
 	# Check if input schema path exists
 	if not os.path.exists(args.schema_directory):
 		sys.exit(ct.SCHEMA_PATH_MISSING)
@@ -532,7 +557,10 @@ def run_allele_call():
 				'BLAST path': args.blast_path,
 				'CDS input': args.cds_input,
 				'Prodigal mode': args.prodigal_mode,
-				'Mode': args.mode}
+				'Mode': args.mode,
+                'BLAST max target seqs': args.blast_max_target_seqs,
+                'BLAST max hsps': args.blast_max_hsps,
+                'BLAST evalue': args.blast_evalue}
 
 	allele_call.main(genome_list, loci_list, args.schema_directory,
 						args.output_directory, args.no_inferred,

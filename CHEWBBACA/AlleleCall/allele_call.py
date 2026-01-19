@@ -1398,8 +1398,7 @@ def process_blast_results(blast_results, bsr_threshold, query_scores):
 			bsr = cf.compute_bsr(raw_score, query_scores[query_id][1])
 			print(f"[DEBUG] calculated bsr :{bsr}")
 		except Exception as e:
-			print('Could not get the self-score for the representative '
-				  f'allele {query_id}', e)
+			print(f'Could not get the self-score for the representative allele {query_id}', e)
 			continue
 		# Only keep matches above BSR threshold
 		if bsr >= bsr_threshold:
@@ -2401,6 +2400,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	self_score_file = fo.join_paths(schema_directory, ['short', 'self_scores'])
 	print(f"[DEBUG] self score exist? : {os.path.isfile(self_score_file)}")
 
+	print(f'Representative BLASTp self-scores to be stored in {self_score_file}')
+
 	if os.path.isfile(self_score_file) is False:
 		print('Determining BLASTp self-score for each representative...')
 		# Determine for all loci, not just target loci
@@ -2425,17 +2426,33 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		print(f"[DEBUG] self_scores (sanitized, in-memory only): n={len(self_scores)}")
 
 		#fo.pickle_dumper(self_scores, self_score_file)
-	else:
+	elif os.path.isfile(self_score_file) is True:
 		# Load existing file but do not re-write it here
 		self_scores = fo.pickle_loader(self_score_file)
 		print(f"[DEBUG] loaded self_scores from disk: type={type(self_scores)}, len={len(self_scores) if isinstance(self_scores, dict) else 'N/A'}")
+
+		if os.path.isfile(self_score_file): 
+			with open(self_score_file, "rb") as f: 
+				raw_bytes = f.read()
+			decoded = pickle.loads(raw_bytes)
+
+			#print(f"[DEBUG] raw pickle hex: {binascii.hexlify(raw_bytes)}")
+			#print(f"[DEBUG] decoded from pickle: type={type(decoded)}, is None? {decoded is None}, value={decoded}")
+		
+			if decoded is None:
+				# remove stale file if it exists
+				try:
+					print(f"[DEBUG] try to remove file if it exist {os.path.isfile(self_score_file)} and is None {decoded is None}")
+					os.remove(self_score_file)
+					print(f"[DEBUG] succesfully removed the file, if it still exist {os.path.isfile(self_score_file)}")
+				except FileNotFoundError:
+					pass
+			
 		# sanity check
 		self_scores = {k: v for k, v in (self_scores or {}).items() if valid_self_score(v)}
 		print(f"[DEBUG] self_scores (sanitized from disk): n={len(self_scores)}")
 
 		#self_scores = persist_self_scores(self_scores, self_score_file)
-
-	print(f'Representative BLASTp self-scores stored in {self_score_file}')
 
 	# Create Kmer index for representatives
 	print('Creating minimizer index for representative alleles...')

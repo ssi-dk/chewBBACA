@@ -20,6 +20,11 @@ import math
 from collections import Counter
 import binascii
 import pickle
+import time
+import json
+import socket
+from pathlib import Path
+from datetime import datetime, timezone
 
 try:
 	from utils import (constants as ct,
@@ -1976,6 +1981,111 @@ def merge_blast_results(blast_outfiles, output_directory, loci_finder):
 		
 	return concatenated_files
 
+def create_lock_file(lock_file: str | os.PathLike,
+					 input_file: str,
+					 schema_path: str,
+					 wait_seconds: int = 15,
+					 stale_after_sec: int | None = 24*3600) -> Path:
+	"""
+	Create a single-file lock at `lock_file`. If it exists, wait and retry.
+	Uses atomic exclusive creation; writes small JSON metadata to the file.
+	Prints cumulative waiting time if blocked.
+	"""
+
+	lock_path = Path(lock_file)
+	lock_path.parent.mkdir(parents=True, exist_ok=True)
+
+	total_waited = 0  # accumulative wait time in seconds
+
+	while True:
+		try:
+			# Atomic exclusive creation: raises FileExistsError if exists
+			with open(lock_path, "x", encoding="utf-8") as fh:
+				json.dump({
+					"pid": os.getpid(),
+					"input": input_file,
+					"scheme": schema_path,
+					"started_at": datetime.now(timezone.utc).isoformat(),
+					"lock_file": str(lock_path),
+				}, fh, indent=2)
+
+			if total_waited > 0:
+				print(f"[INFO] Acquired lock after waiting {total_waited // 60} min {total_waited % 60} sec.")
+			else:
+				print(f"[INFO] Acquired lock immediately: {lock_path}")
+			return lock_path
+		
+		except FileExistsError:
+			# Break stale locks based on mtime
+			if stale_after_sec is not None and lock_path.exists():
+				try:
+					age = time.time() - lock_path.stat().st_mtime
+					if age > stale_after_sec:
+						try:
+							lock_path.unlink()
+							print(f"[WARN] Removed stale lock file {lock_path}, age {age:.0f} sec.")
+							continue  # try to acquire immediately
+						except FileNotFoundError:
+							pass
+				except FileNotFoundError:
+					pass
+
+			time.sleep(wait_seconds)
+
+			total_waited += wait_seconds
+			minutes, seconds = divmod(total_waited, 60)
+			if minutes > 0:
+				print(f"[INFO] Waiting to acquire lock: {minutes} min {seconds} sec")
+			else:
+				print(f"[INFO] Waiting to acquire lock: {seconds} sec")
+
+def cleanup_lock_file(lock_file: str | os.PathLike) -> None:
+	"""
+	Remove the single-file lock (best effort).
+	If the lock file contains JSON metadata with `started_at`,
+	report how long it was held.
+	"""
+	lock_path = Path(lock_file)
+	try:
+		if lock_path.exists():
+			timedelta = None #duration of time it was held
+			held_for_str = None
+			# extracting information from json meta created by lock function
+			pid = None
+			scheme = None
+			try:
+				with open(lock_path, "r", encoding="utf-8") as fh:
+					meta = json.load(fh)
+				if "started_at" in meta:
+					started_at = datetime.fromisoformat(meta["started_at"])
+					timedelta = datetime.now() - started_at
+					minutes, seconds = divmod(int(timedelta.total_seconds()), 60)
+					hours, minutes = divmod(minutes, 60)
+					if hours > 0:
+						held_for_str = f"{hours} h {minutes} min {seconds} sec"
+					elif minutes > 0:
+						held_for_str = f"{minutes} min {seconds} sec"
+					else:
+						held_for_str = f"{seconds} sec"
+				pid = meta.get("pid")
+				scheme = meta.get("scheme")
+			except Exception:
+				pass  # ignore JSON/parsing errors
+
+			lock_path.unlink()
+			msg = f"[INFO] Removed lock file {lock_path}"
+			if held_for_str:
+				msg += f", held for {held_for_str}"
+			if pid:
+				msg += f", created by PID {pid}"
+			if scheme:
+				msg += f", scheme={scheme}"
+			print(msg)
+
+	except FileNotFoundError:
+		pass
+	except Exception as e:
+		print(f"[WARN] Could not remove lock file {lock_file}: {e}")
 
 def allele_calling(fasta_files, schema_directory, temp_directory,
 				   loci_modes, loci_files, config, pre_computed_dir,
@@ -2950,13 +3060,10 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 	return template_dict
 
-
-def main(input_file, loci_list, schema_directory, output_directory,
-		 no_inferred, output_unclassified, output_missing, output_novel,
-		 no_cleanup, hash_profiles, ns, config):
-
-	start_time = pdt.get_datetime()
-
+def Calculations(input_file, loci_list, schema_directory, output_directory,
+				 no_inferred, output_unclassified, output_missing, output_novel,
+				 no_cleanup, hash_profiles, ns, config, start_time):
+	
 	print(f' {ct.CONFIG_VALUES} ')
 	print('='*(len(ct.CONFIG_VALUES)+2))
 
@@ -3078,7 +3185,6 @@ def main(input_file, loci_list, schema_directory, output_directory,
 											  mo.function_helper,
 											  config['CPU cores'],
 											  show_progress=False)
-	
 	print(f"[DEBUG] novel_alleles map_async_parallelizer: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
 
 	# Only keep data for loci that have novel alleles
@@ -3110,7 +3216,7 @@ def main(input_file, loci_list, schema_directory, output_directory,
 			print(f"[DEBUG] about to dump novel_alleles: type={type(novel_alleles)}, "
 				f"is None? {novel_alleles is None}, "
 				f"len={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
-			
+
 			# Get info for new representative alleles that must be added to files in the short directory
 			for locus_novel in novel_alleles:
 				locus_id = loci_finder.search(locus_novel[1]).group()
@@ -3124,10 +3230,9 @@ def main(input_file, loci_list, schema_directory, output_directory,
 						if len(allele_id) > 0:
 							reps_info.setdefault(locus_id, []).append(list(e)+allele_id)
 
-			#major changes for sanity checks as the updated self-score files influence the representative and candidates, and when issues arose for the previous code would still update the self-scores with a negative effect
+			# RAAH
 			if no_inferred is False:
 				self_score_file = fo.join_paths(schema_directory, ['short', 'self_scores'])
-
 				print(f'[DEBUG] no_inferred is False - Adding the BLASTp self-score for the new representatives to {self_score_file}')
 				
 				has_new_reps = any(reps_info.values()) if isinstance(reps_info, dict) else False
@@ -3309,8 +3414,7 @@ def main(input_file, loci_list, schema_directory, output_directory,
 
 	# Move file with list of excluded CDS
 	# File is not created if we only search for exact matches
-	
-	# Solution for the aformentioned error - TypeError: 'NoneType' object is not subscriptable (NOTE 1) - adding and results.get('invalid_alleles')
+	#if config['Mode'] != 1:
 	if config['Mode'] != 1 and results.get('invalid_alleles'):
 		print(f'Creating file with invalid CDSs ({ct.INVALID_CDS_BASENAME})...')
 		fo.move_file(results['invalid_alleles'][0], output_directory)
@@ -3358,3 +3462,56 @@ def main(input_file, loci_list, schema_directory, output_directory,
 								 output_directory)
 
 	print(f'\nResults available in {output_directory}')
+
+	return{
+		"logfile": logfile_path,
+		"output_directory": output_directory,
+		"total_inputs": len(input_files)
+	}
+
+def main(input_file, loci_list, schema_directory, output_directory,
+		no_inferred, output_unclassified, output_missing, output_novel,
+		no_cleanup, hash_profiles, ns, config):
+
+	# capture start before lock so total walltime includes any waiting
+	start_time = pdt.get_datetime()
+	print(f"[INFO] AlleleCall job started at {start_time}")
+
+	# lock ONLY this file: <schema_directory>/temp_check.lock
+	schema_lock_file = Path(schema_directory) / "temp_check.lock"
+	print(f"[INFO] Attempting to acquire lock file: {schema_lock_file}")
+
+	lockfile = create_lock_file(
+		lock_file=schema_lock_file,
+		input_file=input_file,
+		schema_path=schema_directory,
+		wait_seconds=120,          # fixed 5 minutes
+		stale_after_sec=24*3600    # 24h stale lock breaker
+    )
+
+	# Double-check that the lock file exists after creation
+	if Path(lockfile).exists():
+		print(f"[INFO] Verified lock file exists: {lockfile}")
+	else:
+		print(f"[WARN] Expected lock file {lockfile} does not exist after creation!")
+
+	try:
+		print("[INFO] Lock acquired successfully. Starting calculations...")
+		# Do the Allele Calling within Calculations(...)
+		result = Calculations(
+			input_file, loci_list, schema_directory, output_directory,
+			no_inferred, output_unclassified, output_missing, output_novel,
+			no_cleanup, hash_profiles, ns, config, start_time
+		)
+	except Exception as e:
+		print(f"[ERROR] Calculations failed: {e}")
+	else:
+		print("[INFO] Calculations finished successfully.")
+		return result
+	finally:
+		try:
+			print(f"[INFO] Releasing lock file: {lockfile}")
+			cleanup_lock_file(lockfile)
+			print("[INFO] Lock file cleanup complete.")
+		except Exception as ce:
+			print(f"[WARN] Failed to clean up lock file {lockfile}: {ce}")

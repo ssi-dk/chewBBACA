@@ -3477,44 +3477,55 @@ def main(input_file, loci_list, schema_directory, output_directory,
 	start_time = pdt.get_datetime()
 	print(f"[INFO] AlleleCall job started at {start_time}")
 
-	# lock ONLY this file: <schema_directory>/temp_check.lock
-	schema_lock_file = Path(schema_directory) / "temp_check.lock"
-	print(f"[INFO] Attempting to acquire lock file: {schema_lock_file}")
+	print(f"[CHEWBBACA INFO] no_inferred : {no_inferred}")
+	print(config)
 
-	wait_seconds = config.get('Lock wait seconds', 120)	
-	print(f"[INFO] Max lock wait: {wait_seconds} seconds")
+	if no_inferred == False:
+		# lock ONLY this file: <schema_directory>/temp_check.lock
+		schema_lock_file = Path(schema_directory) / "temp_check.lock"
+		print(f"[INFO] Attempting to acquire lock file: {schema_lock_file}")
 
-	lockfile = create_lock_file(
-		lock_file=schema_lock_file,
-		input_file=input_file,
-		schema_path=schema_directory,
-		wait_seconds=wait_seconds,	# fixed 5 minutes
-		stale_after_sec=24*3600		# 24h stale lock breaker
-    )
+		wait_seconds = config.get('Lock wait seconds', 120)	
+		print(f"[INFO] Max lock wait: {wait_seconds} seconds")
 
-	# Double-check that the lock file exists after creation
-	if Path(lockfile).exists():
-		print(f"[INFO] Verified lock file exists: {lockfile}")
-	else:
-		print(f"[WARN] Expected lock file {lockfile} does not exist after creation!")
+		lockfile = create_lock_file(
+			lock_file=schema_lock_file,
+			input_file=input_file,
+			schema_path=schema_directory,
+			wait_seconds=wait_seconds,          # fixed 5 minutes
+			stale_after_sec=24*3600    # 24h stale lock breaker
+		)
 
-	try:
-		print("[INFO] Lock acquired successfully. Starting calculations...")
-		# Do the Allele Calling within Calculations(...)
+		# Double-check that the lock file exists after creation
+		if Path(lockfile).exists():
+			print(f"[INFO] Verified lock file exists: {lockfile}")
+		else:
+			print(f"[WARN] Expected lock file {lockfile} does not exist after creation!")
+
+		try:
+			print("[INFO] Lock acquired successfully. Starting calculations...")
+			# Do the Allele Calling within Calculations(...)
+			result = Calculations(
+				input_file, loci_list, schema_directory, output_directory,
+				no_inferred, output_unclassified, output_missing, output_novel,
+				no_cleanup, hash_profiles, ns, config, start_time
+			)
+		except Exception as e:
+			print(f"[ERROR] Calculations failed: {e}")
+		else:
+			print("[INFO] Calculations finished successfully.")
+			return result
+		finally:
+			try:
+				print(f"[INFO] Releasing lock file: {lockfile}")
+				cleanup_lock_file(lockfile)
+				print("[INFO] Lock file cleanup complete.")
+			except Exception as ce:
+				print(f"[WARN] Failed to clean up lock file {lockfile}: {ce}")
+	elif no_inferred == True:
 		result = Calculations(
 			input_file, loci_list, schema_directory, output_directory,
 			no_inferred, output_unclassified, output_missing, output_novel,
 			no_cleanup, hash_profiles, ns, config, start_time
 		)
-	except Exception as e:
-		print(f"[ERROR] Calculations failed: {e}")
-	else:
-		print("[INFO] Calculations finished successfully.")
 		return result
-	finally:
-		try:
-			print(f"[INFO] Releasing lock file: {lockfile}")
-			cleanup_lock_file(lockfile)
-			print("[INFO] Lock file cleanup complete.")
-		except Exception as ce:
-			print(f"[WARN] Failed to clean up lock file {lockfile}: {ce}")

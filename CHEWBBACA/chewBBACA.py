@@ -458,6 +458,10 @@ def run_allele_call():
 						type=int, required=False, default=120, dest='wait_seconds',
 						help='Seconds to wait for the schema lock before starting AlleleCall across multiple processes.')
 
+	parser.add_argument('--lock-stale',
+						type=int, default=24, dest='lock_stale',
+						help='Treat a lock as stale and remove it if its age exceeds a provided number of hours (default = 24h).')
+	
 	args = parser.parse_args()
 
 	### NOTE 1 - sanity checks for blastp options - to ensure we can accurately use them for testing when doing chewbbaca exact matches of debugging
@@ -470,8 +474,11 @@ def run_allele_call():
 	if args.blast_evalue is not None and args.blast_evalue <= 0:
 		sys.exit('ERROR: --blast-evalue must be > 0')
 	
-	if args.wait_seconds is not None and args.wait_seconds < 0:
-		sys.exit('ERROR: --wait/-w must be >= 0')
+	if args.wait_seconds is not None and args.wait_seconds <= 0:
+		sys.exit('ERROR: --wait-time must be >= 0')
+
+	if args.lock_stale is not None and args.lock_stale <= 0:
+		sys.exit('ERROR: --lock-stale must be >= 0')
 		
 	# Check if input schema path exists
 	if not os.path.exists(args.schema_directory):
@@ -568,7 +575,8 @@ def run_allele_call():
                 'BLAST max target seqs': args.blast_max_target_seqs,
 				'BLAST max hsps': args.blast_max_hsps,
 				'BLAST evalue': args.blast_evalue,
-				'Lock wait seconds': args.wait_seconds}
+				'Lock wait seconds': args.wait_seconds,
+				'Stale lock hours': args.lock_stale}
 
 	allele_call.main(genome_list, loci_list, args.schema_directory,
 						args.output_directory, args.no_inferred,

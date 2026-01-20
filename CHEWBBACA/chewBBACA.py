@@ -454,6 +454,10 @@ def run_allele_call():
 						dest='blast_evalue',
 						help='Pass through to blastp as -evalue.')
 
+	parser.add_argument('--wait-time',
+						type=int, required=False, default=120, dest='wait_seconds',
+						help='Seconds to wait for the schema lock before starting AlleleCall across multiple processes.')
+
 	args = parser.parse_args()
 
 	### NOTE 1 - sanity checks for blastp options - to ensure we can accurately use them for testing when doing chewbbaca exact matches of debugging
@@ -466,6 +470,9 @@ def run_allele_call():
 	if args.blast_evalue is not None and args.blast_evalue <= 0:
 		sys.exit('ERROR: --blast-evalue must be > 0')
 	
+	if args.wait_seconds is not None and args.wait_seconds < 0:
+		sys.exit('ERROR: --wait/-w must be >= 0')
+		
 	# Check if input schema path exists
 	if not os.path.exists(args.schema_directory):
 		sys.exit(ct.SCHEMA_PATH_MISSING)
@@ -559,8 +566,9 @@ def run_allele_call():
 				'Prodigal mode': args.prodigal_mode,
 				'Mode': args.mode,
                 'BLAST max target seqs': args.blast_max_target_seqs,
-                'BLAST max hsps': args.blast_max_hsps,
-                'BLAST evalue': args.blast_evalue}
+				'BLAST max hsps': args.blast_max_hsps,
+				'BLAST evalue': args.blast_evalue,
+				'Lock wait seconds': args.wait_seconds}
 
 	allele_call.main(genome_list, loci_list, args.schema_directory,
 						args.output_directory, args.no_inferred,

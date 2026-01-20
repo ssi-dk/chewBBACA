@@ -3481,12 +3481,15 @@ def main(input_file, loci_list, schema_directory, output_directory,
 	schema_lock_file = Path(schema_directory) / "temp_check.lock"
 	print(f"[INFO] Attempting to acquire lock file: {schema_lock_file}")
 
+	wait_seconds = config.get('Lock wait seconds', 120)	
+	print(f"[INFO] Max lock wait: {wait_seconds} seconds")
+
 	lockfile = create_lock_file(
 		lock_file=schema_lock_file,
 		input_file=input_file,
 		schema_path=schema_directory,
-		wait_seconds=120,          # fixed 5 minutes
-		stale_after_sec=24*3600    # 24h stale lock breaker
+		wait_seconds=wait_seconds,	# fixed 5 minutes
+		stale_after_sec=24*3600		# 24h stale lock breaker
     )
 
 	# Double-check that the lock file exists after creation

@@ -719,7 +719,8 @@ def cluster_intra_filter(clusters, sequences, word_size,
 
 def blast_clusters(clusters, sequences, output_directory,
 				   blastp_path, makeblastdb_path, cpu_cores,
-				   blastdb_aliastool_path, only_rep=False):
+				   blastdb_aliastool_path, only_rep=False,
+				   blast_threads=1,max_hsps=None,max_targets=None, evalue=None):
 	"""Use BLAST to align sequences in the same clusters.
 
 	Parameters
@@ -754,6 +755,8 @@ def blast_clusters(clusters, sequences, output_directory,
 		List with paths to the files with BLASTp results
 		(one file per cluster).
 	"""
+
+	print("[DEBUG] - INSIDE BLAST_CLUSTERS")
 	# Create directory to store BLASTp database
 	blast_db_dir = fo.join_paths(output_directory, ['BLASTp_db'])
 	fo.create_directory(blast_db_dir)
@@ -770,8 +773,12 @@ def blast_clusters(clusters, sequences, output_directory,
 	# Distribute clusters per available cores
 	process_num = 20 if cpu_cores <= 20 else cpu_cores
 	splitted_seqids = mo.distribute_loci(seqids_to_blast, process_num, 'seqcount')
+	
 	common_args = [sequences, blastp_results_dir, blastp_path,
-				   blast_db, blastdb_aliastool_path, only_rep, sc.cluster_blaster]
+				   blast_db, blastdb_aliastool_path, only_rep, 
+				   blast_threads,max_hsps,max_targets, evalue,
+				   sc.cluster_blaster]
+	
 	splitted_seqids = [[s, *common_args] for s in splitted_seqids]
 
 	# BLAST sequences in a cluster against every sequence in that cluster
@@ -805,7 +812,8 @@ def compute_bsr(subject_score, query_score):
 
 
 def determine_self_scores(fasta_file, output_directory, makeblastdb_path,
-						  blast_path, db_type, blast_threads, blastdb_aliastool_path):
+						  blast_path, db_type, blast_threads, blastdb_aliastool_path,
+						  max_hsps=None,max_targets=None, evalue=None):
 	"""Compute the self-alignment raw score for sequences in a FASTA file.
 
 	Parameters
@@ -954,9 +962,17 @@ def determine_self_scores(fasta_file, output_directory, makeblastdb_path,
 			id_file = binary_file
 			rep_blastout = fo.join_paths(output_directory, [f'{current_rep.id}_blastout.tsv'])
 			# Cannot get self-alignemnt for some sequences if composition-based stats is enabled
-			blast_std = bw.run_blast(blast_path, blast_db, rep_file,
-									 rep_blastout, 1, 1,
-									 id_file, 'blastp', None, 0)
+			blast_std = bw.run_blast(blast_path, 
+										blast_db,
+										rep_file,
+										rep_blastout,
+										max_hsps,
+										blast_threads,
+										id_file,
+										'blastp',
+										max_targets,
+										evalue,
+										0)
 			rep_results = fo.read_tabular(rep_blastout)
 			if len(rep_results) > 0:
 				dna_length = (int(rep_results[0][3])*3)+3
@@ -966,7 +982,6 @@ def determine_self_scores(fasta_file, output_directory, makeblastdb_path,
 					  f'score for {rep_results[0][0]}')
 
 	return self_scores
-
 
 def write_coordinates_file(coordinates_file, output_file):
 	"""Write genome CDS coordinates to a TSV file.

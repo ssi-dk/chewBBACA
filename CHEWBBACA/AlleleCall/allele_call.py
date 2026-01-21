@@ -25,6 +25,7 @@ import json
 import socket
 from pathlib import Path
 from datetime import datetime, timezone
+import logging
 
 try:
 	from utils import (constants as ct,
@@ -102,6 +103,9 @@ def compute_loci_modes(loci_files, output_file):
 
 	return loci_modes
 
+def log_and_print(msg: str) -> None:
+    logging.info(msg)  # goes to file
+    print(msg)         # goes to terminal
 
 def create_hash_table(fasta_files, output_file, translation_table):
 	"""Create a hash table with allele hashes mapped to allele identifiers.
@@ -1214,7 +1218,7 @@ def assign_allele_ids(locus_files, ns, repeated, output_directory, loci_finder):
 		novel_outfile = fo.join_paths(output_directory, [f'{locus_id}'])
 		fo.pickle_dumper(novel_alleles, novel_outfile)
 
-		print(f"[DEBUG] novel_alleles after pickle_dumper: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+		logging.info(f"[DEBUG] novel_alleles after pickle_dumper: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
 
 		return [locus_files[0], novel_outfile, total_novel]
 
@@ -1271,18 +1275,18 @@ def create_novel_fastas(inferred_alleles, inferred_representatives,
 		novel_alleles = ['>{0}_{1}\n{2}'.format(locus_id, a[1],
 												str(sequence_index.get(a[2]).seq))
 						 for a in current_novel]
-		print(f"[DEBUG] novel_alleles after index: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+		logging.info(f"[DEBUG] novel_alleles after index: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
 
 		# Create Fasta file with novel alleles
 		novel_file = fo.join_paths(output_directory, ['{0}.fasta'.format(locus_id)])
 		fo.write_lines(novel_alleles, novel_file)
 		updated_novel[locus_novel[0]].append(novel_file)
 		total_inferred += len(novel_alleles)
-		print(f"[DEBUG] total_inferred after novel_alleles: {total_inferred}")
+		logging.info(f"[DEBUG] total_inferred after novel_alleles: {total_inferred}")
 
 		# Add representatives
 		novel_representatives = inferred_representatives.get(locus_id, None)
-		print(f"[DEBUG] novel_representatives afer inferred: type={type(novel_representatives)}, None? {novel_representatives is None}, length={len(novel_representatives) if novel_representatives is not None else 'N/A'}")
+		logging.info(f"[DEBUG] novel_representatives afer inferred: type={type(novel_representatives)}, None? {novel_representatives is None}, length={len(novel_representatives) if novel_representatives is not None else 'N/A'}")
 
 		if novel_representatives is not None:
 			reps_sequences = ['>{0}_{1}\n{2}'.format(locus_id, a[2], str(sequence_index.get(a[0]).seq))
@@ -1327,8 +1331,7 @@ def add_inferred_alleles(inferred_alleles, loci_finder):
 		# Add representative alleles to FASTA files in the 'short' directory
 		if len(files) > 1:
 			novel_representatives = fo.read_lines(files[1])
-			locus_short_path = fo.join_paths(os.path.dirname(locus),
-											 ['short', locus_id+'_short.fasta'])
+			locus_short_path = fo.join_paths(os.path.dirname(locus),['short', locus_id+'_short.fasta'])
 			fo.write_lines(novel_representatives, locus_short_path, write_mode='a')
 			alleles_added[locus_id].append(len(novel_representatives)//2)
 		else:
@@ -1366,7 +1369,6 @@ def select_highest_scores(blast_outfile):
 
 	return best_matches
 
-
 def process_blast_results(blast_results, bsr_threshold, query_scores):
 	"""Process BLAST results to get the data relevant for classification.
 
@@ -1401,9 +1403,9 @@ def process_blast_results(blast_results, bsr_threshold, query_scores):
 		# Might fail if it is not possible to get the query self-score
 		try:
 			bsr = cf.compute_bsr(raw_score, query_scores[query_id][1])
-			print(f"[DEBUG] calculated bsr :{bsr}")
+			logging.info(f"[DEBUG] calculated bsr :{bsr}")
 		except Exception as e:
-			print(f'Could not get the self-score for the representative allele {query_id}', e)
+			print(f"Could not get the self-score for the representative allele {query_id}", e)
 			continue
 		# Only keep matches above BSR threshold
 		if bsr >= bsr_threshold:
@@ -1415,7 +1417,7 @@ def process_blast_results(blast_results, bsr_threshold, query_scores):
 
 			match_info[target_id] = (bsr, qstart, qend,
 									 target_length, query_length, query_id)
-			print(f"[DEBUG] filtered bsr :{bsr}")
+			logging.info(f"[DEBUG] filtered bsr :{bsr}")
 
 	return match_info
 
@@ -1841,11 +1843,11 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	ids_file = fo.join_paths(output_directory,
 							 ['{0}_candidates_ids_{1}.fasta'.format(locus, iteration)])
 	fo.write_lines(list(representative_candidates.keys()), ids_file)
-	print(f"[DEBUG] representative_candidates before binary: type={type(representative_candidates)}, None? {representative_candidates is None}, length={len(representative_candidates) if representative_candidates is not None else 'N/A'}")
+	logging.info(f"[DEBUG] representative_candidates before binary: type={type(representative_candidates)}, None? {representative_candidates is None}, length={len(representative_candidates) if representative_candidates is not None else 'N/A'}")
 	
 	# Convert to binary format if BLAST>=2.10
 	binary_file = f'{ids_file}.bin'
-	print(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blastdb_aliastool function")
+	logging.info(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blastdb_aliastool function")
 	blastp_std = bw.run_blastdb_aliastool(blastdb_aliastool_path,
 											ids_file,
 											binary_file)
@@ -1870,7 +1872,7 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	
 	max_hsps = config['BLAST max hsps']
 	evalue = config['BLAST evalue']
-	print(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blast function")
+	log_and_print(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blast function")
 
 	blastp_std = bw.run_blast(
 		blastp_path,
@@ -1896,7 +1898,7 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	for line in blast_results:
 		line.append(cf.compute_bsr(float(line[6]), candidates_self_scores[line[0]][1]))
 
-	print(f"[DEBUG] blast_results: type={type(blast_results)}, None? {blast_results is None}, length={len(blast_results) if blast_results is not None else 'N/A'}")
+	logging.info(f"[DEBUG] blast_results: type={type(blast_results)}, None? {blast_results is None}, length={len(blast_results) if blast_results is not None else 'N/A'}")
 
 	# Sort by sequence length to process longest candidates first
 	blast_results = sorted(blast_results, key=lambda x: int(x[3]))
@@ -1907,7 +1909,7 @@ def select_representatives(representative_candidates, locus, fasta_file,
 			excluded_candidates.add(r[4])
 
 	selected_candidates = set(representative_candidates.keys()) - excluded_candidates
-	print(f"[DEBUG] selected_candidates: type={type(selected_candidates)}, None? {selected_candidates is None}, length={len(selected_candidates) if selected_candidates is not None else 'N/A'}")
+	logging.info(f"[DEBUG] selected_candidates: type={type(selected_candidates)}, None? {selected_candidates is None}, length={len(selected_candidates) if selected_candidates is not None else 'N/A'}")
 
 	selected = [(seqid, representative_candidates[seqid]) for seqid in selected_candidates]
 
@@ -2010,9 +2012,9 @@ def create_lock_file(lock_file: str | os.PathLike,
 				}, fh, indent=2)
 
 			if total_waited > 0:
-				print(f"[INFO] Acquired lock after waiting {total_waited // 60} min {total_waited % 60} sec.")
+				log_and_print(f"[INFO] Acquired lock after waiting {total_waited // 60} min {total_waited % 60} sec.")
 			else:
-				print(f"[INFO] Acquired lock immediately: {lock_path}")
+				log_and_print(f"[INFO] Acquired lock immediately: {lock_path}")
 			return lock_path
 		
 		except FileExistsError:
@@ -2035,9 +2037,9 @@ def create_lock_file(lock_file: str | os.PathLike,
 			total_waited += wait_seconds
 			minutes, seconds = divmod(total_waited, 60)
 			if minutes > 0:
-				print(f"[INFO] Waiting to acquire lock: {minutes} min {seconds} sec")
+				log_and_print(f"[INFO] Waiting to acquire lock: {minutes} min {seconds} sec")
 			else:
-				print(f"[INFO] Waiting to acquire lock: {seconds} sec")
+				log_and_print(f"[INFO] Waiting to acquire lock: {seconds} sec")
 
 def cleanup_lock_file(lock_file: str | os.PathLike) -> None:
 	"""
@@ -2080,7 +2082,7 @@ def cleanup_lock_file(lock_file: str | os.PathLike) -> None:
 				msg += f", created by PID {pid}"
 			if scheme:
 				msg += f", scheme={scheme}"
-			print(msg)
+			log_and_print(f"{msg}")
 
 	except FileNotFoundError:
 		pass
@@ -2138,6 +2140,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		self-alignment BLASTp raw score, dictionary with information about
 		new representatives for each locus).
 	"""
+
+	logging.info(f"Calling function allele_calling with {fasta_files},{schema_directory},{temp_directory})")
 	# Get dictionary template to store variables to return
 	template_dict = ct.ALLELECALL_DICT
 
@@ -2152,11 +2156,10 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# Inputs are genome assemblies
 	if config['CDS input'] is False:
 		# Run Pyrodigal to determine CDSs for all input genomes
-		print(f'\n {ct.CDS_PREDICTION} ')
-		print('='*(len(ct.CDS_PREDICTION)+2))
+		logging.info(f"\n {ct.CDS_PREDICTION}")
 
 		# Gene prediction step
-		print(f'Predicting CDSs for {len(fasta_files)} inputs...')
+		logging.info(f"Predicting CDSs for {len(fasta_files)} inputs...")
 		pyrodigal_results = cf.predict_genes(full_to_unique,
 											 config['Prodigal training file'],
 											 config['Translation table'],
@@ -2173,17 +2176,16 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		failed, total_extracted, cds_fastas, cds_coordinates, cds_counts, close_to_tip = pyrodigal_results
 
 		if len(failed) > 0:
-			print(f'\nFailed to predict CDSs for {len(failed)} inputs.')
-			print('Make sure that Pyrodigal runs in meta mode (--pm meta) '
-				  'if any input file has less than 100kbp.')
+			logging.info(f"\nFailed to predict CDSs for {len(failed)} inputs.")
+			logging.info(f"Make sure that Pyrodigal runs in meta mode (--pm meta) if any input file has less than 100kbp.")
 		if len(cds_fastas) == 0:
 			sys.exit(f'{ct.CANNOT_PREDICT}')
 
-		print(f'\nExtracted a total of {total_extracted} CDSs from {len(fasta_files)-len(failed)} inputs.')
+		logging.info(f"\nExtracted a total of {total_extracted} CDSs from {len(fasta_files)-len(failed)} inputs.")
 	# Inputs are Fasta files with the predicted CDSs
 	else:
 		# Rename the CDSs in each file based on the input unique identifiers
-		print(f'\nRenaming CDSs for {len(full_to_unique)} input files...')
+		logging.info(f"\nRenaming CDSs for {len(full_to_unique)} input files...")
 
 		renaming_inputs = []
 		cds_fastas = []
@@ -2208,7 +2210,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		cds_counts = {r[0]: r[1] for r in renaming_results}
 		cds_counts = {full_to_unique[k]: v for k, v in cds_counts.items()}
 		total_cdss = sum([r[1] for r in renaming_results])
-		print(f'Input files contain a total of {total_cdss} coding sequences.')
+		logging.info(f"Input files contain a total of {total_cdss} coding sequences.")
 
 	if len(failed) > 0:
 		# Exclude inputs that failed gene prediction
@@ -2252,18 +2254,18 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# keep hash of unique sequences and a list with the integer
 	# identifiers of genomes that have those sequences
 	# lists of integers are encoded with polyline algorithm
-	print(f'\n {ct.CDS_DEDUPLICATION} ')
-	print('='*(len(ct.CDS_DEDUPLICATION)+2))
+	logging.info(f"\n {ct.CDS_DEDUPLICATION} ")
+	#print('='*(len(ct.CDS_DEDUPLICATION)+2))
 	# Create directory to store files from DNA deduplication
 	dna_dedup_dir = fo.join_paths(preprocess_dir, ['cds_deduplication'])
 	fo.create_directory(dna_dedup_dir)
-	print('Identifying distinct CDSs...')
+	log_and_print(f"Identifying distinct CDSs...")
 	dna_dedup_results = cf.exclude_duplicates(cds_files, dna_dedup_dir,
 											  config['CPU cores'],
 											  [unique_to_int, int_to_unique])
 
 	dna_distinct_htable, distinct_seqids, distinct_file, repeated = dna_dedup_results
-	print(f'Identified {len(dna_distinct_htable)} distinct CDSs.')
+	log_and_print(f"Identified {len(dna_distinct_htable)} distinct CDSs.")
 	template_dict['dna_fasta'] = distinct_file
 	template_dict['dna_hashtable'] = dna_distinct_htable
 
@@ -2276,7 +2278,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# Create directory to store files with classification results
 	classification_dir = fo.join_paths(temp_directory, ['classification_files'])
 	fo.create_directory(classification_dir)
-	print(f"Succesfully created directory? {classification_dir}")
+	logging.info(f"Succesfully created directory? {classification_dir}")
 
 	# Create files with empty dict to store results per locus
 	empty_results = {}
@@ -2287,13 +2289,12 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		classification_files[file] = file_path
 
 	# CDS exact matching
-	print(f'[INFO] matching CDS : \n {ct.CDS_EXACT} ')
-	print('='*(len(ct.CDS_EXACT)+2))
+	logging.info(f"[INFO] matching CDS : \n {ct.CDS_EXACT}")
 
 	matched_seqids = []
 	total_matches = 0
 	distinct_seqids_count = 0
-	print('Searching for CDS exact matches...')
+	logging.info(f"Searching for CDS exact matches...")
 	# List files in pre-computed directory
 	dna_tables = fo.listdir_fullpath(pre_computed_dir, 'DNAtable')
 	for file in dna_tables:
@@ -2307,7 +2308,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		total_matches += dna_matches[1]
 		distinct_seqids_count += dna_matches[2]
 
-	print(f'Found {total_matches} exact matches ({distinct_seqids_count} distinct schema alleles).')
+	log_and_print(f"Found {total_matches} exact matches ({distinct_seqids_count} distinct schema alleles).")
 
 	# Save list of seqids that matched
 	dna_exact_outdir = fo.join_paths(preprocess_dir, ['cds_exact_matching'])
@@ -2319,7 +2320,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# Exclude seqids that matched from distinct seqids
 	unclassified_seqids = im.filter_list(distinct_seqids, matched_seqids)
 
-	print(f'Unclassified CDSs: {len(unclassified_seqids)}')
+	log_and_print(f"Unclassified CDSs: {len(unclassified_seqids)}")
 
 	"""
 	NOTE 1: We get the following error mentioned later. It appears in the log
@@ -2343,16 +2344,16 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# User only wants to determine exact matches or all sequences were classified
 	if config['Mode'] == 1 or len(unclassified_seqids) == 0:
 		if len(unclassified_seqids) == 0:
-			print('[INFO] All CDSs matched exactly at DNA level; skipping translation and invalid-CDS stage.')
+			logging.info(f"[INFO] All CDSs matched exactly at DNA level; skipping translation and invalid-CDS stage.")
 	
 		template_dict['classification_files'] = classification_files
 		template_dict['protein_fasta'] = distinct_file
 		template_dict['unclassified_ids'] = unclassified_seqids
 		template_dict['representatives'] = {}
 
-		print(f"[DEBUG] exact match - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
-		print(f"[DEBUG] exact match - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
-		print(f"[DEBUG] exact match - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
+		logging.info(f"config['Mode'] == 1 or len(unclassified_seqids) == 0: exact match - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
+		logging.info(f"config['Mode'] == 1 or len(unclassified_seqids) == 0: exact match - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
+		logging.info(f"config['Mode'] == 1 or len(unclassified_seqids) == 0: exact match - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
 
 		return template_dict
 
@@ -2366,7 +2367,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# Create directory to store translation results
 	cds_translation_dir = fo.join_paths(preprocess_dir, ['cds_translation'])
 	fo.create_directory(cds_translation_dir)
-	print(f'Translating {len(unclassified_seqids)} CDSs...')
+	log_and_print(f"Translating {len(unclassified_seqids)} CDSs...")
 	# This step excludes small sequences
 	ts_results = cf.translate_sequences(unclassified_seqids, distinct_file,
 										cds_translation_dir,
@@ -2375,7 +2376,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 										config['CPU cores'])
 
 	protein_file, ut_seqids, ut_lines = ts_results
-	print(f'\n{len(ut_seqids)} CDSs could not be translated.')
+	log_and_print("\n{len(ut_seqids)} CDSs could not be translated.")
 
 	# Create file with list of invalid CDSs
 	invalid_file = fo.join_paths(temp_directory, [ct.INVALID_CDS_BASENAME])
@@ -2385,7 +2386,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	invalid_counts = count_invalid([unique_to_int, int_to_unique], ut_seqids,
 								   dna_index, dna_distinct_htable)
 	template_dict['invalid_alleles'] = [invalid_file, invalid_counts]
-	print(f'Unclassified CDSs: {len(unclassified_seqids)-len(ut_seqids)}')
+	log_and_print(f"Unclassified CDSs: {len(unclassified_seqids)-len(ut_seqids)}")
 
 	# All sequences were excluded during translation
 	if len(unclassified_seqids)-len(ut_seqids) == 0:
@@ -2394,38 +2395,36 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		template_dict['unclassified_ids'] = unclassified_seqids
 		template_dict['representatives'] = {}
 
-		print(f"[DEBUG] excluded translation - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
-		print(f"[DEBUG] excluded translation - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
-		print(f"[DEBUG] excluded translation - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
+		logging.info(f"len(unclassified_seqids)-len(ut_seqids) == 0: excluded translation - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
+		logging.info(f"len(unclassified_seqids)-len(ut_seqids) == 0: excluded translation - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
+		logging.info(f"len(unclassified_seqids)-len(ut_seqids) == 0: excluded translation - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
 
 		return template_dict
 
 	# Protein deduplication step
-	print(f'\n {ct.PROTEIN_DEDUPLICATION} ')
-	print('='*(len(ct.PROTEIN_DEDUPLICATION)+2))
+	logging.info(f"\n {ct.PROTEIN_DEDUPLICATION} ")
 
 	# Create directory to store files from protein deduplication
 	protein_dedup_dir = fo.join_paths(preprocess_dir, ['protein_deduplication'])
 	fo.create_directory(protein_dedup_dir)
-	print('Identifying distinct proteins...')
+	log_and_print(f"Identifying distinct proteins...")
 	ds_results = cf.exclude_duplicates([protein_file], protein_dedup_dir, 1,
 									   [unique_to_int, int_to_unique], True)
 
 	distinct_pseqids, representative_pseqids, representative_pfasta, _ = ds_results
 
-	print(f'Identified {len(distinct_pseqids)} distinct proteins.')
+	log_and_print(f"Identified {len(distinct_pseqids)} distinct proteins.")
 	template_dict['protein_hashtable'] = distinct_pseqids
 
 	# Identify exact matches at protein level
 	# Exact matches at protein level are novel alleles
-	print(f'\n {ct.PROTEIN_EXACT} ')
-	print('='*(len(ct.PROTEIN_EXACT)+2))
+	logging.info(f"\n {ct.PROTEIN_EXACT}")
 	total_matches = 0
 	distinct_seqids_count = 0
 	distinct_protids = 0
 	matched_seqids = []
 	previous_hashes = set()
-	print('Searching for Protein exact matches...')
+	logging.info(f"Searching for Protein exact matches...")
 	# List files in pre-computed dir
 	protein_tables = fo.listdir_fullpath(pre_computed_dir, 'PROTEINtable')
 	for file in protein_tables:
@@ -2452,7 +2451,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		# different CDSs may encode the same protein
 		previous_hashes = protein_matches[5]
 
-	print(f'Found {distinct_protids} exact matches ({distinct_seqids_count} distinct CDSs, {total_matches} total CDSs).')
+	log_and_print("Found {distinct_protids} exact matches ({distinct_seqids_count} distinct CDSs, {total_matches} total CDSs).")
 
 	# Save list of seqids that matched
 	protein_exact_outdir = fo.join_paths(preprocess_dir, ['protein_exact_matching'])
@@ -2467,7 +2466,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	unclassified_seqids = im.filter_list(representative_pseqids, matched_seqids)
 	total_selected = fao.get_sequences_by_id(protein_index, unclassified_seqids, unique_pfasta)
 
-	print(f'Unclassified proteins: {total_selected}')
+	logging.info(f"Unclassified proteins: {total_selected}")
 
 	# User only wanted DNA and Protein exact matches or all sequences were classified
 	if config['Mode'] == 2 or len(unclassified_seqids) == 0:
@@ -2479,9 +2478,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		return template_dict
 
 	# Translate schema representatives
-	print(f'\n {ct.PROTEIN_CLUSTERING} ')
-	print('='*(len(ct.PROTEIN_CLUSTERING)+2))
-	print('Translating schema representative alleles...')
+	logging.info(f"\n {ct.PROTEIN_CLUSTERING} ")
+	logging.info(f"Translating schema representative alleles...")
 	rep_dir = fo.join_paths(schema_directory, ['short'])
 	rep_full_list = fo.listdir_fullpath(rep_dir, '.fasta')
 	reps_protein_dir = fo.join_paths(temp_directory, ['3_translated_representatives'])
@@ -2510,12 +2508,12 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 	# Determine self-score for representatives if file is missing
 	self_score_file = fo.join_paths(schema_directory, ['short', 'self_scores'])
-	print(f"[DEBUG] self score exist? : {os.path.isfile(self_score_file)}")
+	logging.info(f"[DEBUG] self score exist? : {os.path.isfile(self_score_file)}")
 
-	print(f'Representative BLASTp self-scores to be stored in {self_score_file}')
+	logging.info(f"Representative BLASTp self-scores to be stored in {self_score_file}")
 
 	if os.path.isfile(self_score_file) is False:
-		print('Determining BLASTp self-score for each representative...')
+		logging.info(f"Determining BLASTp self-score for each representative...")
 		# Determine for all loci, not just target loci
 		if len(repprot_to_locibase) > len(repprot_fastas):
 			concat_full_reps = fo.join_paths(reps_protein_dir, ['schema_loci_translated_representatives.fasta'])
@@ -2536,7 +2534,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		max_hsps = config['BLAST max hsps']
 		evalue = config['BLAST evalue']
 		threads = config['CPU cores']
-		print(f"[DEBUG BLAST] - within allele_calling function before running determine_self_scores which  calles blast wrapper run_blast function")
+		logging.info(f"[DEBUG BLAST] - within allele_calling function before running determine_self_scores which  calles blast wrapper run_blast function")
 
 		self_scores = cf.determine_self_scores(concat_full_reps,
 										 		self_score_dir,
@@ -2549,18 +2547,18 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 												max_targets_value,
 												evalue)
 
-		print(f"[DEBUG] self_scores: type={type(self_scores)}, None? {self_scores is None}, length={len(self_scores) if self_scores is not None else 'N/A'}")
+		logging.info(f"[DEBUG] self_scores: type={type(self_scores)}, None? {self_scores is None}, length={len(self_scores) if self_scores is not None else 'N/A'}")
 
 		# persist or delete file as needed
 		#self_scores = persist_self_scores(self_scores, self_score_file)
 		self_scores = {k: v for k, v in (self_scores or {}).items() if valid_self_score(v)}
-		print(f"[DEBUG] self_scores (sanitized, in-memory only): n={len(self_scores)}")
+		logging.info(f"[DEBUG] self_scores (sanitized, in-memory only): n={len(self_scores)}")
 
 		#fo.pickle_dumper(self_scores, self_score_file)
 	elif os.path.isfile(self_score_file) is True:
 		# Load existing file but do not re-write it here
 		self_scores = fo.pickle_loader(self_score_file)
-		print(f"[DEBUG] loaded self_scores from disk: type={type(self_scores)}, len={len(self_scores) if isinstance(self_scores, dict) else 'N/A'}")
+		logging.info(f"[DEBUG] loaded self_scores from disk: type={type(self_scores)}, len={len(self_scores) if isinstance(self_scores, dict) else 'N/A'}")
 
 		if os.path.isfile(self_score_file): 
 			with open(self_score_file, "rb") as f: 
@@ -2573,27 +2571,27 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			if decoded is None:
 				# remove stale file if it exists
 				try:
-					print(f"[DEBUG] try to remove file if it exist {os.path.isfile(self_score_file)} and is None {decoded is None}")
+					logging.info(f"[DEBUG] try to remove file if it exist {os.path.isfile(self_score_file)} and is None {decoded is None}")
 					os.remove(self_score_file)
-					print(f"[DEBUG] succesfully removed the file, if it still exist {os.path.isfile(self_score_file)}")
+					logging.info(f"[DEBUG] succesfully removed the file, if it still exist {os.path.isfile(self_score_file)}")
 				except FileNotFoundError:
 					pass
 			
 		# sanity check
 		self_scores = {k: v for k, v in (self_scores or {}).items() if valid_self_score(v)}
-		print(f"[DEBUG] self_scores (sanitized from disk): n={len(self_scores)}")
+		logging.info(f"[DEBUG] self_scores (sanitized from disk): n={len(self_scores)}")
 
 		#self_scores = persist_self_scores(self_scores, self_score_file)
 
 	# Create Kmer index for representatives
-	print('Creating minimizer index for representative alleles...')
+	log_and_print(f"Creating minimizer index for representative alleles...")
 	representatives = im.kmer_index(concat_reps, 5)
-	print(f'Created index with {len(representatives)} distinct minimizers for {len(loci_files)} loci.')
+	log_and_print(f"Created index with {len(representatives)} distinct minimizers for {len(loci_files)} loci.")
 
 	# Import unclassified proteins
 	proteins = fao.import_sequences(unique_pfasta)
 	# Cluster proteins into representative clusters
-	print('Clustering proteins...')
+	log_and_print(f"Clustering proteins...")
 	# Define input group size based on number of available CPU cores
 	group_size = math.ceil(len(proteins)/config['CPU cores'])
 	cs_results = cf.cluster_sequences(proteins,
@@ -2616,8 +2614,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	for k, v in clusters.items():
 		distinct_clustered = distinct_clustered.union(set([s[0] for s in v]))
 	total_clustered = len(distinct_clustered)
-	print(f'\nClustered {total_clustered} proteins into {len(clusters)} clusters.')
-	print(f'{len(proteins)-total_clustered} proteins were not added to any cluster.')
+	log_and_print(f"\nClustered {total_clustered} proteins into {len(clusters)} clusters.")
+	log_and_print(f"{len(proteins)-total_clustered} proteins were not added to any cluster.")
 
 	# Create Fasta file and index for unclassified proteins and schema representatives
 	all_prots = fo.join_paths(clustering_dir, ['distinct_proteins.fasta'])
@@ -2639,7 +2637,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		threads = config['CPU cores']
 
 		# BLAST representatives against clustered sequences
-		print('Aligning cluster representatives against clustered proteins...')
+		log_and_print(f"Aligning cluster representatives against clustered proteins...")
 		blast_results, blast_results_dir = cf.blast_clusters(clusters, all_prots,
 															clustering_dir, blastp_path,
 															makeblastdb_path,
@@ -2651,7 +2649,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 															max_targets_value,
 															evalue)
 
-		print('[DEBUG] - AFTER BLAST CLUSTER')
+		logging.info(f"[DEBUG] - AFTER BLAST CLUSTER")
 		blast_files = im.flatten_list(blast_results)
 
 		# Concatenate files based on locus identifier included in file paths
@@ -2686,7 +2684,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 		# Classify matches
 		if len(loci_results) > 0:
-			print('\nClassifying high-scoring matches...')
+			logging.info(f"\nClassifying high-scoring matches...")
 			classification_inputs = []
 			blast_clusters_results_dir = fo.join_paths(clustering_dir, ['classification_data'])
 			fo.create_directory(blast_clusters_results_dir)
@@ -2722,11 +2720,11 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			# May have repeated elements due to same CDS matching different loci
 			excluded = set(excluded)
 
-		print(f'\nClassified {len(excluded)} distinct proteins.')
+		log_and_print(f"\nClassified {len(excluded)} distinct proteins.")
 
 	# Get seqids of remaining unclassified sequences
 	unclassified_seqids = list(set(unclassified_seqids)-set(excluded))
-	print(f'Unclassified proteins: {len(unclassified_seqids)}')
+	logging.info(f"Unclassified proteins: {len(unclassified_seqids)}")
 
 	# User only wanted exact matches and clustering or all sequences were classified
 	if config['Mode'] == 3 or len(unclassified_seqids) == 0:
@@ -2737,9 +2735,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 
 		return template_dict
 
-	print(f'\n {ct.REPRESENTATIVE_DETERMINATION} ')
-	print('='*(len(ct.REPRESENTATIVE_DETERMINATION)+2))
-	print('Aligning representative alleles against unclassified proteins...')
+	logging.info(f"\n {ct.REPRESENTATIVE_DETERMINATION}")
+	logging.info(f"Aligning representative alleles against unclassified proteins...")
 
 	# Create directory to store data for each iteration
 	iterative_rep_dir = fo.join_paths(temp_directory, ['5_representative_determination'])
@@ -2769,9 +2766,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	# Keep iterating while there are sequences being classified
 	rep_iter_header = '{:^11} {:^9} {:^14} {:^12} {:^10} {:^14}'.format('Iteration', 'Loci', 'High-Scoring',
 								'Classified', 'Selected', 'Unclassified')
-	print('='*len(rep_iter_header))
-	print(rep_iter_header)
-	print('='*len(rep_iter_header))
+	logging.info(f"{rep_iter_header}")
 	while exausted is False:
 		print('\r', f'{iteration}\t...', end='')
 		# Create directory for current iteration
@@ -2782,7 +2777,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		fo.write_lines(unclassified_seqids, remaining_seqids_file)
 		binary_file = f'{remaining_seqids_file}.bin'
 
-		print(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blastdb_aliastool function")
+		logging.info(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blastdb_aliastool function")
 		blastp_std = bw.run_blastdb_aliastool(blastdb_aliastool_path,
 												remaining_seqids_file,
 												binary_file)
@@ -2824,7 +2819,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			evalue = config['BLAST evalue']
 			
 			threads = config['CPU cores']
-			print(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blast function")
+			logging.info(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blast function")
 
 			blast_inputs.append([
 				blastp_path,
@@ -3027,7 +3022,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 			max_hsps = config['BLAST max hsps']
 			evalue = config['BLAST evalue']
 			threads = config['CPU cores']
-			print(f"[DEBUG BLAST] - within allele_calling function before running determine_self_scores which calls blast wrapper run_blast function")
+			logging.info(f"[DEBUG BLAST] - within allele_calling function before running determine_self_scores which calls blast wrapper run_blast function")
 
 			new_self_scores = cf.determine_self_scores(concat_repy,
 										 		candidates_blast_dir,
@@ -3053,10 +3048,10 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	template_dict['unclassified_ids'] = unclassified_seqids
 	template_dict['self_scores'] = self_scores
 	template_dict['representatives'] = new_reps
-
-	print(f"[DEBUG] final return - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
-	print(f"[DEBUG] final return - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
-	print(f"[DEBUG] final return - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
+	
+	logging.info(f"final return - template_dict['self_scores']: type={type(template_dict['self_scores'])}, None? {template_dict['self_scores'] is None}, length={len(template_dict['self_scores']) if template_dict['self_scores'] is not None else 'N/A'}")
+	logging.info(f"final return - template_dict['invalid_alleles']: type={type(template_dict['invalid_alleles'])}, None? {template_dict['invalid_alleles'] is None}, length={len(template_dict['invalid_alleles']) if template_dict['invalid_alleles'] is not None else 'N/A'}")
+	logging.info(f"final return - template_dict['representatives']: type={type(template_dict['representatives'])}, None? {template_dict['representatives'] is None}, length={len(template_dict['representatives']) if template_dict['representatives'] is not None else 'N/A'}")
 
 	return template_dict
 
@@ -3064,23 +3059,21 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 				 no_inferred, output_unclassified, output_missing, output_novel,
 				 no_cleanup, hash_profiles, ns, config, start_time):
 	
-	print(f' {ct.CONFIG_VALUES} ')
-	print('='*(len(ct.CONFIG_VALUES)+2))
+	logging.info(f"{ct.CONFIG_VALUES}")
 
 	if config['Prodigal mode'] == 'meta' and config['Prodigal training file'] is not None:
-		print('Prodigal mode is set to "meta". Will not use '
-			  f'the training file in {config["Prodigal training file"]}')
+		logging.info(f'Prodigal mode is set to "meta". Will not use the training file in {config["Prodigal training file"]}')
 		config['Prodigal training file'] = None
 
 	# Print config parameters
 	for k, v in config.items():
-		print('{0}: {1}'.format(k, v))
+		logging.info(f"{k}: {v}")
 
 	# Read list of paths to input FASTA files
 	input_files = fo.read_lines(input_file, strip=True)
 	# Sort file paths
 	input_files = im.sort_iterable(input_files, sort_key=str.lower)
-	print('Number of inputs: {0}'.format(len(input_files)))
+	logging.info(f"Number of inputs: {len(input_files)}")
 
 	# Get list of loci in the schema
 	schema_loci = fo.pickle_loader(fo.join_paths(schema_directory,
@@ -3092,7 +3085,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 	loci_to_call = fo.read_lines(loci_list)
 	loci_to_call = {file: schema_loci_paths.index(file)
 					for file in loci_to_call}
-	print('Number of loci: {0}'.format(len(loci_to_call)))
+	logging.info(f"Number of inputs: {len(loci_to_call)}")
 
 	# Create regex compiler to find longest locus identifier in paths/strings
 	loci_ids = [fo.file_basename(file, False) for file in loci_to_call]
@@ -3104,26 +3097,25 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 	# Create directory to store intermediate files
 	temp_directory = fo.join_paths(output_directory, ['temp'])
 	fo.create_directory(temp_directory)
-	print(f'Intermediate files will be stored in {temp_directory}')
+	logging.info(f"Intermediate files will be stored in {temp_directory}")
 
-	print(f'\n {ct.PRECOMPUTED_DATA} ')
-	print('='*(len(ct.PRECOMPUTED_DATA)+2))
+	logging.info(f"\n {ct.PRECOMPUTED_DATA}")
 
 	# Read or compute locus allele size mode
 	loci_modes_file = fo.join_paths(schema_directory, ['loci_modes'])
 	if os.path.isfile(loci_modes_file) is True:
 		loci_modes = fo.pickle_loader(loci_modes_file)
 	else:
-		print('Determining allele size mode for all loci...')
+		logging.info(f"Determining allele size mode for all loci...")
 		# Compute for all loci, not just for the subset of loci to call
 		loci_modes = compute_loci_modes(schema_loci_paths, loci_modes_file)
-	print(f'Loci allele size mode values stored in {loci_modes_file}')
+	logging.info(f"Loci allele size mode values stored in {loci_modes_file}")
 
 	# Check if schema contains folder with pre-computed hash tables
 	pre_computed_dir = fo.join_paths(schema_directory, ['pre_computed'])
 	if os.path.isdir(pre_computed_dir) is False:
-		print('Could not find pre-computed hash tables used for exact matching.')
-		print('Creating hash tables...')
+		logging.info(f"Could not find pre-computed hash tables used for exact matching.")
+		logging.info(f"Creating hash tables...")
 		# Create hash tables for DNA and Protein exact matching
 		# This avoids translating all the schema alleles in each run
 		fo.create_directory(pre_computed_dir)
@@ -3131,7 +3123,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 							   schema_loci_paths,
 							   config['Translation table'],
 							   config['CPU cores'])
-	print(f'Hash tables stored in {pre_computed_dir}')
+	logging.info(f"Hash tables stored in {pre_computed_dir}")
 
 	# Perform allele calling
 	results = allele_calling(input_files, schema_directory,
@@ -3140,8 +3132,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 							 loci_finder)
 
 	# Assign allele identifiers, add alleles to schema and create output files
-	print(f'\n {ct.WRAPPING_UP} ')
-	print('='*(len(ct.WRAPPING_UP)+2))
+	logging.info(f"\n {ct.WRAPPING_UP} ")
 
 	# Adjust missing locus classification based on mode
 	classification_labels = ct.ALLELECALL_CLASSIFICATIONS
@@ -3149,13 +3140,12 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 	# Other modes do not and LNF classifications are considered Probable LNFs (PLNF)
 	if config['Mode'] != 4:
 		classification_labels[-1] = ct.PROBABLE_LNF
-		print(f"Running in mode {config['Mode']}. Renaming Locus Not Found (LNF) "
-			  "class to Probable LNF (PLNF).")
+		logging.info(f"Running in mode {config['Mode']}. Renaming Locus Not Found (LNF) class to Probable LNF (PLNF).")
 
 	# Sort to get output order similar to chewBBACA v2
 	results['classification_files'] = dict(sorted(results['classification_files'].items()))
 
-	print(f'Creating file with genome coordinates profiles ({ct.RESULTS_COORDINATES_BASENAME})...')
+	log_and_print(f"Creating file with genome coordinates profiles ({ct.RESULTS_COORDINATES_BASENAME})...")
 	results_contigs = write_results_contigs(list(results['classification_files'].values()),
 											results['int_to_unique'],
 											output_directory,
@@ -3165,13 +3155,12 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 	outfile, repeated_info, repeated_counts = results_contigs
 
 	# Identify paralogous loci
-	print('Identifying paralogous loci and creating files with the list of paralogous '
-		  f'loci ({ct.PARALOGOUS_COUNTS_BASENAME} & {ct.PARALOGOUS_LOCI_BASENAME})...')
+	log_and_print(f"Identifying paralogous loci and creating files with the list of paralogous loci ({ct.PARALOGOUS_COUNTS_BASENAME} & {ct.PARALOGOUS_LOCI_BASENAME})...")
 	paralogous_info = identify_paralogous(repeated_info, output_directory)
-	print(f'Identified {paralogous_info[0]} paralogous loci.')
+	log_and_print(f"Identified {paralogous_info[0]} paralogous loci.")
 
 	# Assign allele identifiers to inferred alleles
-	print('Assigning allele identifiers to inferred alleles...')
+	logging.info(f"Assigning allele identifiers to inferred alleles...")
 	# Create directory to store data for novel alleles
 	novel_directory = fo.join_paths(temp_directory, ['novel_alleles'])
 	novel_data_directory = fo.join_paths(novel_directory, ['data'])
@@ -3185,16 +3174,16 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 											  mo.function_helper,
 											  config['CPU cores'],
 											  show_progress=False)
-	print(f"[DEBUG] novel_alleles map_async_parallelizer: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+	logging.info(f"[DEBUG] novel_alleles map_async_parallelizer: type={type(novel_alleles)}, None? {novel_alleles is None}, length={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
 
 	# Only keep data for loci that have novel alleles
 	novel_alleles = [r for r in novel_alleles if r is not None]
 	novel_alleles_count = sum([locus_novel[2] for locus_novel in novel_alleles])
-	print(f'Assigned identifiers to {novel_alleles_count} new alleles for {len(novel_alleles)} loci.')
+	logging.info(f"Assigned identifiers to {novel_alleles_count} new alleles for {len(novel_alleles)} loci.")
 
 	updated_files = {}
 	if config['Mode'] != 1:
-		print('Getting original sequence identifiers for new alleles...')
+		logging.info(f"Getting original sequence identifiers for new alleles...")
 		for locus_novel in novel_alleles:
 			current_novel = fo.pickle_loader(locus_novel[1])
 			for l in current_novel:
@@ -3205,17 +3194,13 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 			fo.pickle_dumper(current_novel, locus_novel[1])
 
 		reps_info = {}
-		print(f"[DEBUG] before mode 4 - reps_info = {type(reps_info)} and length {len(reps_info)}")
+		logging.info(f"[DEBUG] before mode 4 - reps_info = {type(reps_info)} and length {len(reps_info)}")
 		if config['Mode'] == 4:
-			print('Getting data for new representative alleles...')
+			logging.info(f"Getting data for new representative alleles...")
 
-			print(f"[DEBUG] about to dump representatives: type={type(results['representatives'])}, "
-				f"is None? {results['representatives'] is None}, "
-				f"len={len(results['representatives']) if results['representatives'] is not None else 'N/A'}")
+			logging.info(f"[DEBUG] about to dump representatives: type={type(results['representatives'])}, is None? {results['representatives'] is None}, len={len(results['representatives']) if results['representatives'] is not None else 'N/A'}")
 
-			print(f"[DEBUG] about to dump novel_alleles: type={type(novel_alleles)}, "
-				f"is None? {novel_alleles is None}, "
-				f"len={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
+			logging.info(f"[DEBUG] about to dump novel_alleles: type={type(novel_alleles)}, is None? {novel_alleles is None}, len={len(novel_alleles) if novel_alleles is not None else 'N/A'}")
 
 			# Get info for new representative alleles that must be added to files in the short directory
 			for locus_novel in novel_alleles:
@@ -3226,20 +3211,20 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 					for e in current_results:
 						allele_id = [line[1] for line in current_novel if line[0] == e[1]]
 						# We might have representatives that were converted to NIPH but still appear in the list
-						print(f"[DEBUG] inside mode 4 - allele_id = {type(allele_id)} and length {len(allele_id)}")
+						logging.info(f"[DEBUG] inside mode 4 - allele_id = {type(allele_id)} and length {len(allele_id)}")
 						if len(allele_id) > 0:
 							reps_info.setdefault(locus_id, []).append(list(e)+allele_id)
 
 			# RAAH
 			if no_inferred is False:
 				self_score_file = fo.join_paths(schema_directory, ['short', 'self_scores'])
-				print(f'[DEBUG] no_inferred is False - Adding the BLASTp self-score for the new representatives to {self_score_file}')
+				logging.info(f"[DEBUG] no_inferred is False - Adding the BLASTp self-score for the new representatives to {self_score_file}")
 				
 				has_new_reps = any(reps_info.values()) if isinstance(reps_info, dict) else False
 				has_new_self_scores = isinstance(results.get('self_scores'), dict) and len(results['self_scores']) > 0
 
 				if not has_new_reps and not has_new_self_scores:
-					print("[INFO] No new representatives and no new self_scores calculated; leaving existing self_scores file untouched.")
+					logging.info(f"[INFO] No new representatives and no new self_scores calculated; leaving existing self_scores file untouched.")
 				else:
 					# Start from existing on-disk self_scores (if any), so we only merge / update.
 					base_scores = {}
@@ -3247,32 +3232,32 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 						loaded = fo.pickle_loader(self_score_file)
 						if isinstance(loaded, dict):
 							base_scores = loaded
-						print(f"[DEBUG] loaded self_scores from disk: type={type(base_scores)}, len={len(base_scores)}")
+						logging.info(f"[DEBUG] loaded self_scores from disk: type={type(base_scores)}, len={len(base_scores)}")
 					else:
-						print("[DEBUG] self_scores file not found on disk; starting with empty dict")
+						logging.info(f"[DEBUG] self_scores file not found on disk; starting with empty dict")
 	
 					# Merge in any newly computed scores (if present)
 					if has_new_self_scores:
-						print(f"[DEBUG] merging {len(results['self_scores'])} new self_scores entries")
+						logging.info(f"[DEBUG] merging {len(results['self_scores'])} new self_scores entries")
 						for k, v in results['self_scores'].items():
 							base_scores[k] = v
 
 					# If there are new reps, remap their IDs to the new allele IDs and copy scores
 					if has_new_reps:
 						reps_to_del = set()
-						print(f"[DEBUG] reps_info type={type(reps_info)}, len={len(reps_info)}")
+						logging.info(f"[DEBUG] reps_info type={type(reps_info)}, len={len(reps_info)}")
 
 						for locus_id, entries in reps_info.items():
-							print("[DEBUG] if reps info is empty does it enter this step and thus results['self_scores'] is not set therefore None")
+							logging.info(f"[DEBUG] if reps info is empty does it enter this step and thus results['self_scores'] is not set therefore None")
 							for r in entries:
 								# r[0] = old representative seqid; r[-1] = new allele numeric id
 								old_id = r[0]
 								new_id = locus_id + '_' + r[-1]
-								print(f"[DEBUG] remapping old_id={old_id} → new_id={new_id}")
+								logging.info(f"[DEBUG] remapping old_id={old_id} → new_id={new_id}")
 								if old_id in base_scores:
-									print(f"[DEBUG] base_scores[{old_id}] = {base_scores[old_id]}")
+									logging.info(f"[DEBUG] base_scores[{old_id}] = {base_scores[old_id]}")
 								else:
-									print(f"[DEBUG] old_id {old_id} not found in base_scores")
+									logging.info(f"[DEBUG] old_id {old_id} not found in base_scores")
 
 								# Copy old self-score forward if present
 								if old_id in base_scores and valid_self_score(base_scores[old_id]):
@@ -3284,19 +3269,19 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 							if old_id in base_scores:
 								del base_scores[old_id]
 						
-						print(f"[DEBUG] removed {len(reps_to_del)} old representative IDs")
+						logging.info(f"[DEBUG] removed {len(reps_to_del)} old representative IDs")
 
 					# Final sanitize: keep only valid (len, score) tuples
 					before_len = len(base_scores)
 					base_scores = {k: v for k, v in (base_scores or {}).items() if valid_self_score(v)}
-					print(f"[DEBUG] sanitized self_scores: before={before_len}, after={len(base_scores)}")
+					logging.info(f"[DEBUG] sanitized self_scores: before={before_len}, after={len(base_scores)}")
 
 					if base_scores:
 						fo.pickle_dumper(base_scores, self_score_file)
-						print(f"[INFO] self_scores updated with {len(base_scores)} entries at {self_score_file}.")
+						logging.info(f"[INFO] self_scores updated with {len(base_scores)} entries at {self_score_file}.")
 					else:
 						# IMPORTANT: per requirement, do NOT remove or create the file
-						print("[INFO] No valid self_scores to write; existing file left unchanged.")
+						logging.info(f"[INFO] No valid self_scores to write; existing file left unchanged.")
 
 					# Only peek at the on-disk pickle if we actually wrote/updated it now
 					if base_scores and (has_new_reps or has_new_self_scores):
@@ -3304,12 +3289,12 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 							with open(self_score_file, "rb") as f:
 								raw_bytes = f.read()
 							decoded = pickle.loads(raw_bytes)
-							print(f"[DEBUG] reloaded self_scores: type={type(decoded)}, is None? {decoded is None}, len={len(decoded)}")
+							logging.info(f"[DEBUG] reloaded self_scores: type={type(decoded)}, is None? {decoded is None}, len={len(decoded)}")
 						except Exception as e:
-							print(f"[WARN] could not re-load self_scores ({e}).")
+							logging.info(f"[WARN] could not re-load self_scores ({e}).")
 
 		if len(novel_alleles) > 0:
-			print('Creating FASTA files with the new alleles...')
+			logging.info(f"Creating FASTA files with the new alleles...")
 			# Create Fasta files with novel alleles
 			novel_fastas_directory = fo.join_paths(novel_directory, ['novel_fastas'])
 			novel_rep_directory = fo.join_paths(novel_fastas_directory, ['short'])
@@ -3318,23 +3303,23 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 			total_inferred, total_representatives, updated_novel = novel_data
 			updated_files = updated_novel
 			if no_inferred is False:
-				print('Adding new alleles to schema...')
+				logging.info(f"Adding new alleles to schema...")
 				# Add inferred alleles to schema
 				alleles_added = add_inferred_alleles(updated_novel, loci_finder)
 				# Recompute mode for loci with novel alleles
-				print(f'Updating allele size mode values stored in {loci_modes_file}')
+				logging.info(f"Updating allele size mode values stored in {loci_modes_file}")
 				for locus_novel in novel_alleles:
 					alleles_sizes = list(fao.sequence_lengths(locus_novel[0]).values())
 					# Select first value in list if there are several values with same frequency
 					loci_modes[fo.file_basename(locus_novel[0], False)] = [sm.determine_mode(alleles_sizes)[0], alleles_sizes]
 				fo.pickle_dumper(loci_modes, loci_modes_file)
 				# Add novel alleles hashes to pre-computed hash tables
-				print(f'Updating pre-computed hash tables in {pre_computed_dir}')
+				logging.info(f"Updating pre-computed hash tables in {pre_computed_dir}")
 				total_hashes = update_hash_tables(updated_novel, loci_to_call,
 								   config['Translation table'], pre_computed_dir)
 
 	# Create file with allelic profiles
-	print(f'Creating file with the allelic profiles ({ct.RESULTS_ALLELES_BASENAME})...')
+	logging.info(f"Creating file with the allelic profiles ({ct.RESULTS_ALLELES_BASENAME})...")
 	profiles_table = write_results_alleles(list(results['classification_files'].values()),
 										   list(results['int_to_unique'].values()),
 										   output_directory,
@@ -3342,7 +3327,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 										   loci_finder)
 
 	# Create file with class counts per input file
-	print(f'Creating file with class counts per input ({ct.RESULTS_STATISTICS_BASENAME})...')
+	logging.info(f"Creating file with class counts per input ({ct.RESULTS_STATISTICS_BASENAME})...")
 	input_stats_file = write_results_statistics(results['classification_files'],
 												results['int_to_unique'],
 												results['cds_counts'],
@@ -3352,7 +3337,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 												results['invalid_alleles'])
 
 	# Create file with class counts per locus called
-	print(f'Creating file with class counts per locus ({ct.LOCI_STATS_BASENAME})...')
+	logging.info(f"Creating file with class counts per locus ({ct.LOCI_STATS_BASENAME})...")
 	loci_stats_file = write_loci_summary(results['classification_files'],
 										 output_directory,
 										 len(input_files),
@@ -3361,7 +3346,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 
 	# Create FASTA file with unclassified CDSs
 	if output_unclassified is True:
-		print(f'Creating file with unclassified CDSs ({ct.UNCLASSIFIED_BASENAME})...')
+		logging.info(f"Creating file with unclassified CDSs ({ct.UNCLASSIFIED_BASENAME})...")
 		unclassified_file = create_unclassified_fasta(results['dna_fasta'],
 													  results['protein_fasta'],
 													  results['unclassified_ids'],
@@ -3371,8 +3356,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 
 	# Create FASTA and TSV files with data about the CDSs classified as non-EXC/non-INF
 	if output_missing is True:
-		print('Creating files with data about the CDSs classified as non-EXC/non-INF '
-			  f'({ct.MISSING_FASTA_BASENAME} & {ct.MISSING_TSV_BASENAME})...')
+		logging.info(f"Creating files with data about the CDSs classified as non-EXC/non-INF {ct.MISSING_FASTA_BASENAME} & {ct.MISSING_TSV_BASENAME})...")
 		missing_outfiles = create_missing_fasta(results['classification_files'],
 												results['dna_fasta'],
 												results['int_to_unique'],
@@ -3384,7 +3368,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 
 	# Create FASTA file with inferred alleles
 	if len(novel_alleles) > 0 and output_novel is True:
-		print(f'Creating file with new alleles ({ct.NOVEL_BASENAME})...')
+		logging.info(f"Creating file with new alleles ({ct.NOVEL_BASENAME})...")
 		novel_fasta = fo.join_paths(output_directory, [ct.NOVEL_BASENAME])
 		novel_files = [v[0] for v in updated_files.values()]
 		# Concatenate all FASTA files with inferred alleles
@@ -3392,7 +3376,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 
 	# Create TSV file with hashed profiles
 	if hash_profiles is not None:
-		print(f'Creating file with {hash_profiles} hashed profiles...')
+		logging.info(f"Creating file with {hash_profiles} hashed profiles...")
 		hashed_profiles_file = ph.main(profiles_table, schema_directory, output_directory,
 									   hash_profiles, config['CPU cores'], 100, updated_files,
 									   no_inferred)
@@ -3400,7 +3384,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 	# Create TSV file with CDS coordinates
 	# Will not be created if input files contain set of CDS instead of contigs
 	if config['CDS input'] is False:
-		print(f'Creating file with the coordinates of CDSs identified in inputs ({ct.CDS_COORDINATES_BASENAME})...')
+		logging.info(f"Creating file with the coordinates of CDSs identified in inputs ({ct.CDS_COORDINATES_BASENAME})...")
 		files = []
 		for gid, file in results['cds_coordinates'].items():
 			tsv_file = fo.join_paths(os.path.dirname(file), [f'{gid}_coordinates.tsv'])
@@ -3416,25 +3400,24 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 	# File is not created if we only search for exact matches
 	#if config['Mode'] != 1:
 	if config['Mode'] != 1 and results.get('invalid_alleles'):
-		print(f'Creating file with invalid CDSs ({ct.INVALID_CDS_BASENAME})...')
+		logging.info(f"Creating file with invalid CDSs ({ct.INVALID_CDS_BASENAME})...")
 		fo.move_file(results['invalid_alleles'][0], output_directory)
 
 	# Count total for each classification type
-	print('Counting number of classified CDSs...')
+	logging.info(f"Counting number of classified CDSs...")
 	global_counts, total_cds = count_global_classifications(results['classification_files'].values(),
 													 classification_labels)
 
 	# Subtract number of times a CDSs is repeated
-	print(f'Classified a total of {total_cds-sum(repeated_counts.values())} CDSs.')
+	logging.info(f"Classified a total of {total_cds-sum(repeated_counts.values())} CDSs.")
 	class_counts_header = [f'{c:^8}' for c in ct.ALLELECALL_CLASSIFICATIONS[:-1]]
 	class_counts_header = ' '.join(class_counts_header)
 	class_counts_values = [f'{global_counts.get(c, 0):^8}' for c in ct.ALLELECALL_CLASSIFICATIONS[:-1]]
 	class_counts_values = ' '.join(class_counts_values)
-	print('='*len(class_counts_header))
-	print(class_counts_header)
-	print('='*len(class_counts_header))
-	print(class_counts_values)
-	print('='*len(class_counts_header))
+	
+	logging.info(f"class counts header {class_counts_header}")
+	logging.info(f"class count values {class_counts_values}")
+
 
 	if no_inferred is False and config['Mode'] != 1 and len(novel_alleles) > 0:
 		print('Added {0} new alleles to the schema.'.format(total_inferred))
@@ -3471,7 +3454,7 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 
 def main(input_file, loci_list, schema_directory, output_directory,
 		no_inferred, output_unclassified, output_missing, output_novel,
-		no_cleanup, hash_profiles, ns, config):
+		no_cleanup, hash_profiles, ns, config, logfile):
 
 	# capture start before lock so total walltime includes any waiting
 	start_time = pdt.get_datetime()
@@ -3483,12 +3466,12 @@ def main(input_file, loci_list, schema_directory, output_directory,
 	if no_inferred == False:
 		# lock ONLY this file: <schema_directory>/temp_check.lock
 		schema_lock_file = Path(schema_directory) / "temp_check.lock"
-		print(f"[INFO] Attempting to acquire lock file: {schema_lock_file}")
+		log_and_print(f"[INFO] Attempting to acquire lock file: {schema_lock_file}")
 
 		wait_seconds = config.get('Lock wait seconds', 120)	
 		lock_stale = config.get('Stale lock hours', 24)
-		print(f"[INFO] lock wait: {wait_seconds} seconds")
-		print(f"[INFO] Stale lock wait: {lock_stale} hours ({lock_stale*3600} seconds)")
+		log_and_print(f"[INFO] lock wait: {wait_seconds} seconds")
+		log_and_print(f"[INFO] Stale lock wait: {lock_stale} hours ({lock_stale*3600} seconds)")
 
 		lockfile = create_lock_file(
 			lock_file=schema_lock_file,
@@ -3500,12 +3483,12 @@ def main(input_file, loci_list, schema_directory, output_directory,
 
 		# Double-check that the lock file exists after creation
 		if Path(lockfile).exists():
-			print(f"[INFO] Verified lock file exists: {lockfile}")
+			logging.info(f"[INFO] Verified lock file exists: {lockfile}")
 		else:
-			print(f"[WARN] Expected lock file {lockfile} does not exist after creation!")
+			logging.info(f"[WARN] Expected lock file {lockfile} does not exist after creation!")
 
 		try:
-			print("[INFO] Lock acquired successfully. Starting calculations...")
+			log_and_print("[INFO] Lock acquired successfully. Starting calculations...")
 			# Do the Allele Calling within Calculations(...)
 			result = Calculations(
 				input_file, loci_list, schema_directory, output_directory,
@@ -3513,17 +3496,17 @@ def main(input_file, loci_list, schema_directory, output_directory,
 				no_cleanup, hash_profiles, ns, config, start_time
 			)
 		except Exception as e:
-			print(f"[ERROR] Calculations failed: {e}")
+			logging.info(f"[ERROR] Calculations failed: {e}")
 		else:
-			print("[INFO] Calculations finished successfully.")
+			log_and_print("[INFO] Calculations finished successfully.")
 			return result
 		finally:
 			try:
-				print(f"[INFO] Releasing lock file: {lockfile}")
+				log_and_print(f"[INFO] Releasing lock file: {lockfile}")
 				cleanup_lock_file(lockfile)
-				print("[INFO] Lock file cleanup complete.")
+				log_and_print("[INFO] Lock file cleanup complete.")
 			except Exception as ce:
-				print(f"[WARN] Failed to clean up lock file {lockfile}: {ce}")
+				logging.info(f"[WARN] Failed to clean up lock file {lockfile}: {ce}")
 	elif no_inferred == True:
 		result = Calculations(
 			input_file, loci_list, schema_directory, output_directory,

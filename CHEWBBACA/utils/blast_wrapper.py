@@ -181,7 +181,7 @@ def run_blast(blast_path, blast_db, fasta_file, blast_output,
 	if evalue is not None:
 		blast_args.extend(['-evalue', str(evalue)])
 
-	print(f"[DEBUG] Running Blast command {blast_args}")
+	#print(f"[DEBUG] Running Blast command {blast_args}")
 	   
 	blast_process = subprocess.Popen(blast_args,
 								  stdout=subprocess.PIPE,
@@ -220,7 +220,7 @@ def run_blastdb_aliastool(blastdb_aliastool_path, seqid_infile, seqid_outfile):
 	blastdb_aliastool_args = [blastdb_aliastool_path, '-seqid_file_in',
 							  seqid_infile, '-seqid_file_out', seqid_outfile]
 	
-	print(f"[DEBUG] blastdb_aliastool_args {blastdb_aliastool_args}")
+	#print(f"[DEBUG] blastdb_aliastool_args {blastdb_aliastool_args}")
 
 	blastdb_aliastool_process = subprocess.Popen(blastdb_aliastool_args,
 												 stdout=subprocess.PIPE,
@@ -257,7 +257,7 @@ def run_blastdbcmd(blastdbcmd_path, blast_db, output_file):
 	"""
 	blastdbcmd_args = [blastdbcmd_path, '-db', blast_db, '-out', output_file, '-entry', 'all']
 
-	print(f"[DEBUG] run_blastdbcmd {blastdbcmd_args}")
+	#print(f"[DEBUG] run_blastdbcmd {blastdbcmd_args}")
 
 	blastdbcmd_process = subprocess.Popen(blastdbcmd_args,
 										  stdout=subprocess.PIPE,

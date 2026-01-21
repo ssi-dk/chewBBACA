@@ -9,12 +9,14 @@ It parses the options and arguments provided through the command
 line and calls the specified module.
 """
 
-
+import shlex
 import os
 import sys
 import shutil
 import hashlib
 import argparse
+from datetime import datetime
+import logging
 
 try:
 	from __init__ import __version__
@@ -57,6 +59,9 @@ except ModuleNotFoundError:
 								 constants as ct,
 								 parameters_validation as pv,
 								 file_operations as fo)
+
+	# logging import that works in both layouts
+	from CHEWBBACA.utils.logging_file import setup_logging
 
 	from CHEWBBACA.utils.parameters_validation import ModifiedHelpFormatter
 
@@ -462,6 +467,10 @@ def run_allele_call():
 						type=int, default=24, dest='lock_stale',
 						help='Treat a lock as stale and remove it if its age exceeds a provided number of hours (default = 24h).')
 	
+	parser.add_argument('--logfile', '--log-file',
+					 	type=str,dest='logfile',required=False,
+						help='Path to a log file. Default: <output_directory>/logging_info.txt')
+	
 	args = parser.parse_args()
 
 	### NOTE 1 - sanity checks for blastp options - to ensure we can accurately use them for testing when doing chewbbaca exact matches of debugging
@@ -479,7 +488,36 @@ def run_allele_call():
 
 	if args.lock_stale is not None and args.lock_stale <= 0:
 		sys.exit('ERROR: --lock-stale must be >= 0')
-		
+
+	# Create output directory
+	created = fo.create_directory(args.output_directory)
+	# Output directory exists
+	# Create a subdirectory to store intermediate files and results
+	if created is False:
+		current_time = pdt.get_datetime()
+		current_time_str = pdt.datetime_str(current_time,
+											date_format='%Y%m%dT%H%M%S')
+		results_dir = fo.join_paths(args.output_directory,
+									['results_{0}'.format(current_time_str)])
+		created = fo.create_directory(results_dir)
+		args.output_directory = results_dir
+	
+	#automatically set the log path
+	# ---- Configure logging after output_directory is finalized ----
+	if not args.logfile:
+		log_dir = args.output_directory
+	else:
+		log_dir = args.logfile
+
+	time_notes = datetime.now().strftime('%d_%m_%Y')   # e.g., 10_09_2025
+	setup_logging(log_dir=log_dir, module='AlleleCall', notes=time_notes)
+	logging.info(f'ChewBBACA is running the AlleleCall command')
+	cmd = shlex.join(sys.argv) if hasattr(shlex, "join") else " ".join(shlex.quote(a) for a in sys.argv)
+	run_started = datetime.now().strftime('%d_%m_%Y %H:%M:%S')
+	logging.info(f"Run command: {cmd}")
+	logging.info(f"Run started: {run_started}")
+
+
 	# Check if input schema path exists
 	if not os.path.exists(args.schema_directory):
 		sys.exit(ct.SCHEMA_PATH_MISSING)
@@ -512,20 +550,6 @@ def run_allele_call():
 		args.translation_table = run_params['translation_table']
 		args.minimum_length = run_params['minimum_locus_length']
 		args.size_threshold = run_params['size_threshold']
-
-	# Create output directory
-	created = fo.create_directory(args.output_directory)
-	# Output directory exists
-	# Create a subdirectory to store intermediate files and results
-	if created is False:
-		current_time = pdt.get_datetime()
-		current_time_str = pdt.datetime_str(current_time,
-											date_format='%Y%m%dT%H%M%S')
-		results_dir = fo.join_paths(args.output_directory,
-									['results_{0}'.format(current_time_str)])
-		created = fo.create_directory(results_dir)
-		args.output_directory = results_dir
-		print(f'Output directory exists. Will store results in {results_dir}\n')
 
 	loci_list = fo.join_paths(args.output_directory, [ct.LOCI_LIST])
 	# User provided a list of genes to call
@@ -582,7 +606,7 @@ def run_allele_call():
 						args.output_directory, args.no_inferred,
 						args.output_unclassified, args.output_missing,
 						args.output_novel, args.no_cleanup, args.hash_profiles,
-						args.ns, config)
+						args.ns, config, args.logfile)
 
 	# if args.store_profiles is True:
 	#     updated = ps.store_allelecall_results(args.output_directory, args.schema_directory)

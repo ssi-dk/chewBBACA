@@ -756,7 +756,7 @@ def blast_clusters(clusters, sequences, output_directory,
 		(one file per cluster).
 	"""
 
-	print("[DEBUG] - INSIDE BLAST_CLUSTERS")
+	#print("[DEBUG] - INSIDE BLAST_CLUSTERS")
 	# Create directory to store BLASTp database
 	blast_db_dir = fo.join_paths(output_directory, ['BLASTp_db'])
 	fo.create_directory(blast_db_dir)

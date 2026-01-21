@@ -2769,12 +2769,71 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 	logging.info(f"{rep_iter_header}")
 	while exausted is False:
 		print('\r', f'{iteration}\t...', end='')
+
 		# Create directory for current iteration
 		iteration_directory = fo.join_paths(iterative_rep_dir, ['iteration_{0}'.format(iteration)])
 		fo.create_directory(iteration_directory)
+
+		if not unclassified_seqids:
+			"""
+			we use the unclassified_seqids to create a blast db and blast again 
+				fao.get_sequences_by_id(prot_index, unclassified_seqids,remaining_seqs_file, limit=50000)
+
+				but the set of unclassified seqids are reduced after each iteration to use for blast datab
+
+				unclassified_seqids = set(unclassified_seqids) - excluded
+				
+				so when it's parsed to blast with 
+
+				'-seqidlist', '/dpssi/home/henras/ChewieTest/fbi/results_20250902T112912/temp/5_representative_determination/iteration_1/unclassified_seqids_1.txt.bin', 
+
+				it fails.
+
+			NOTE 5 - by iteration 2 unclassified_seqids is empty but still tries to write a binary file for BLAST to use. 
+			
+			 Representative determination
+			==============================
+			Aligning representative alleles against unclassified proteins...
+			===========================================================================
+			Iteration    Loci     High-Scoring   Classified   Selected   Unclassified
+			===========================================================================
+				1        1342          1             1           1            0
+			2      ...
+			
+			So you can see the error occurs in iteration 2 - hence we need to break the loop.
+
+			Safeguard breaks loop for empty lists for second iteration.
+			
+			To avoid error below
+
+			Could not convert ST49_20250915_test/temp/5_representative_determination/iteration_2/unclassified_seqids_2.txt to binary format.
+			/bin/blastdb_aliastool returned the following error:
+			b'Error: Empty seqid list\n'
+			"""
+			# Optional: print the summary row consistently
+			print('\r', '{:^11} {:^9} {:^14} {:^12} {:^10} {:^14}'.format(
+				iteration, len(repprot_fastas), 0, 0, 0, 0))
+
+			"""
+			By breaking i get:
+
+			Representative determination
+			==============================
+			Aligning representative alleles against unclassified proteins...
+			===========================================================================
+			Iteration    Loci     High-Scoring   Classified   Selected   Unclassified
+			===========================================================================
+				1        1342          1             1           1            0
+				2          1           0             0           0            0
+			===========================================================================
+			"""
+			exausted = True
+			break
+
 		# Create text file with unclassified seqids
 		remaining_seqids_file = fo.join_paths(iteration_directory, ['unclassified_seqids_{0}.txt'.format(iteration)])
-		fo.write_lines(unclassified_seqids, remaining_seqids_file)
+		fo.write_lines(list(unclassified_seqids), remaining_seqids_file) # NOTE 5 - needs to be a list, and not a set
+		#fo.write_lines(unclassified_seqids, remaining_seqids_file)
 		binary_file = f'{remaining_seqids_file}.bin'
 
 		logging.info(f"[DEBUG BLAST] - within allele_calling function before running blast wrapper run_blastdb_aliastool function")
@@ -2931,6 +2990,7 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		print('\r', '{:^11} {:^9} {:^14} {:^12} {:^10}'.format(iteration, len(repprot_fastas), len(loci_results), len(excluded), '...'), end='')
 
 		# Exclude sequences that were excluded
+		# NOTE6 - there is no no remaining unclassified IDs - but the loop continues - hence my safeguard further up
 		unclassified_seqids = set(unclassified_seqids) - excluded
 
 		# Create directory to store new representatives

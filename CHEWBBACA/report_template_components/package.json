@@ -23,7 +23,7 @@
     "react-scroll": "^1.8.9",
     "remark-gfm": "^3.0.1",
     "util": "^0.12.5",
-    "webpack": "^5.78.0"
+    "webpack": "^5.105.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -37,6 +37,9 @@ try:
 					   parameters_validation as pv,
 					   file_operations as fo)
 
+	# logging import that works in both layouts
+	from utils.logging_file import setup_logging
+
 	from utils.parameters_validation import ModifiedHelpFormatter
 
 	from CHEWBBACA_NS import (download_schema, upload_schema,

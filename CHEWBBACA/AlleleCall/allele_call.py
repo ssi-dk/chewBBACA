@@ -1875,16 +1875,16 @@ def select_representatives(representative_candidates, locus, fasta_file,
 	log_and_print(f"[DEBUG BLAST] - within select_representatives function before running blast wrapper run_blast function")
 
 	blastp_std = bw.run_blast(
-		blastp_path,
-		blast_db,
-		fasta_file,
-		blast_output,
-		threads=threads,
-		ids_file=ids_file,
-		max_targets=max_targets_value,
-		max_hsps=max_hsps,
-		evalue=evalue,
-	)
+        blast_path=blastp_path, 
+        blast_db=blast_db, 
+        fasta_file=fasta_file, 
+        blast_output=blast_output, 
+        threads=threads, 
+        ids_file=ids_file, 
+        max_targets=max_targets_value, 
+        max_hsps=1, 
+        evalue=evalue, 
+    ) 
 
 	blast_results = fo.read_tabular(blast_output)
 	# Get self-score for all candidates

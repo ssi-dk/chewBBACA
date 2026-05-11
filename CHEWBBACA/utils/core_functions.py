@@ -966,13 +966,14 @@ def determine_self_scores(fasta_file, output_directory, makeblastdb_path,
 										blast_db,
 										rep_file,
 										rep_blastout,
-										max_hsps,
-										blast_threads,
-										id_file,
-										'blastp',
-										max_targets,
-										evalue,
-										0)
+										max_hsps=1,
+										blast_threads=1,
+										id_file= id_file,
+										blast_task='blastp',
+										max_targets=None,
+										evalue=None,
+										composition_stats=0
+									)
 			rep_results = fo.read_tabular(rep_blastout)
 			if len(rep_results) > 0:
 				dna_length = (int(rep_results[0][3])*3)+3

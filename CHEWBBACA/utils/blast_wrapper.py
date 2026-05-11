@@ -107,9 +107,9 @@ def determine_blast_task(sequences, blast_type='blastp'):
 	return blast_task
 
 
-def run_blast(blast_path, blast_db, fasta_file, blast_output,
-			  max_hsps=None, threads=1, ids_file=None, blast_task=None,
-			  max_targets=None, evalue=None, composition_stats=None):
+def run_blast(blast_path, blast_db, fasta_file, blast_output, 
+              max_hsps=None, threads=1, ids_file=None, blast_task=None, 
+              max_targets=None, evalue=0.001, composition_stats=None): #ASMU har slettet evalue da den altid vil være hardcoded 0.001, men i forhold til original så bliver max_hpsp sat til 1 og her None 
 	"""Execute BLAST to align sequences against a BLAST database.
 
 	Parameters

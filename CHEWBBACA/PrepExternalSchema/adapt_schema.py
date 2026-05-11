@@ -294,9 +294,10 @@ def adapt_loci(loci, schema_path, schema_short_path, bsr, min_len,
 
 						rep_blastout = fo.join_paths(locus_temp_dir, [f'{seqid}_blastout.tsv'])
 						# Cannot get self-alignemnt for some sequences if composition-based stats is enabled
-						blast_std = bw.run_blast(blastp_path, blastp_db, current_rep_file,
-												rep_blastout, 1, 1,
-												id_file, 'blastp', None, 0)
+						
+						blast_std = bw.run_blast(blast_path=blastp_path, blast_db=blastp_db, fasta_file=current_rep_file,
+												blast_output=rep_blastout, max_hsps=1, threads=1,
+												ids_file=id_file, blast_task='blastp', max_targets=None, composition_stats=0)
 						rep_results = fo.read_tabular(rep_blastout)
 						if len(rep_results) > 0:
 							rep_self_scores[rep_results[0][0]] = float(rep_results[0][6])
@@ -319,9 +320,9 @@ def adapt_loci(loci, schema_path, schema_short_path, bsr, min_len,
 											 [f'{locus_id}_blast_out.tsv'])
 				# Set 'max_target_seqs' to huge number because BLAST only
 				# returns 500 hits by default
-				blast_std = bw.run_blast(blastp_path, blastp_db, rep_file,
-										 blast_output, 1, 1, ids_file,
-										 blastp_task, 100000)
+				blast_std = bw.run_blast(blast_path=blastp_path, blast_db=blastp_db, fasta_file=rep_file,
+										 blast_output=blast_output, max_hsps=1, threads=1, ids_file=ids_file,
+										 blast_task=blastp_task, max_targets=100000)
 
 				# Import BLAST results
 				blast_results = fo.read_tabular(blast_output)

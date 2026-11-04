@@ -723,7 +723,8 @@ def write_loci_summary(classification_files, output_directory, total_inputs,
 	"""
 	loci_stats = [ct.LOCI_STATS_HEADER]
 	for k, v in classification_files.items():
-		locus_id = loci_finder.search(k).group()
+		filename = os.path.basename(k)
+		locus_id = loci_finder.search(filename).group()
 		locus_results = fo.pickle_loader(v)
 
 		# Count locus classifications
@@ -824,7 +825,8 @@ def write_results_alleles(classification_files, input_identifiers,
 	columns = [['FILE'] + input_identifiers]
 	for i, file in enumerate(classification_files):
 		# Get locus identifier to add as column header
-		locus_id = loci_finder.search(file).group()
+		filename = os.path.basename(file)
+		locus_id = loci_finder.search(filename).group()
 		locus_results = fo.pickle_loader(file)
 		locus_column = [locus_id]
 		for ri in range(1, len(input_identifiers)+1):
@@ -986,7 +988,8 @@ def write_results_contigs(classification_files, input_identifiers,
 	# Get hash if coordinates are available, seqid otherwise
 	id_index = 2 if cds_coordinates_files is not None else 1
 	for i, file in enumerate(classification_files):
-		locus_id = loci_finder.search(file).group()
+		filename = os.path.basename(file)
+		locus_id = loci_finder.search(filename).group()
 		locus_results = fo.pickle_loader(file)
 		column = [locus_id]
 		for gid in input_identifiers:
@@ -1152,7 +1155,8 @@ def assign_allele_ids(locus_files, ns, repeated, output_directory, loci_finder):
 
 	total_novel = 0
 	# Import allele calling results
-	locus_id = loci_finder.search(locus_files[0]).group()
+	filename = os.path.basename(locus_files[0])
+	locus_id = loci_finder.search(filename).group()
 	locus_results = fo.pickle_loader(locus_files[1])
 
 	#print(f"[DEBUG] locus_id: type={type(locus_id)}, None? {locus_id is None}, length={len(locus_id) if locus_id is not None else 'N/A'}")
@@ -1267,7 +1271,8 @@ def create_novel_fastas(inferred_alleles, inferred_representatives,
 	total_inferred = 0
 	total_representatives = 0
 	for locus_novel in inferred_alleles:
-		locus_id = loci_finder.search(locus_novel[1]).group()
+		filename = os.path.basename(locus_novel[1])
+		locus_id = loci_finder.search(filename).group()
 		current_novel = fo.pickle_loader(locus_novel[1])
 
 		updated_novel[locus_novel[0]] = []
@@ -1321,7 +1326,8 @@ def add_inferred_alleles(inferred_alleles, loci_finder):
 	"""
 	alleles_added = {}
 	for locus, files in inferred_alleles.items():
-		locus_id = loci_finder.search(locus).group()
+		filename = os.path.basename(locus)
+		locus_id = loci_finder.search(filename).group()
 		# Read novel alleles
 		novel_alleles = fo.read_lines(files[0])
 		# Append novel alleles to locus FASTA file in the schema
@@ -1767,7 +1773,8 @@ def create_missing_fasta(class_files, fasta_file, input_map, dna_hashtable,
 	for locus, file in class_files.items():
 		locus_lines = []
 		locus_records = []
-		locus_id = loci_finder.search(locus).group()
+		filename = os.path.basename(locus)
+		locus_id = loci_finder.search(filename).group()
 		locus_classifications = fo.pickle_loader(file)
 		# Get data for genomes that do not have EXC or INF classifications
 		# it will not get invalid classes if a genome is classified as EXC|INF
@@ -1971,7 +1978,8 @@ def merge_blast_results(blast_outfiles, output_directory, loci_finder):
 	loci_files = {}
 	for file in blast_outfiles:
 		# Filenames include allele identifier
-		locus_id = loci_finder.search(file).group()
+		filename = os.path.basename(file)
+		locus_id = loci_finder.search(filename).group()
 		loci_files.setdefault(locus_id, []).append(file)
 
 	# Concatenate files with results for the same locus
@@ -2923,7 +2931,8 @@ def allele_calling(fasta_files, schema_directory, temp_directory,
 		iteration_matches_dir = fo.join_paths(iteration_directory, ['match_data'])
 		fo.create_directory(iteration_matches_dir)
 		for file in loci_output_files:
-			locus_id = loci_finder.search(file).group()
+			filename = os.path.basename(file)
+			locus_id = loci_finder.search(filename).group()
 			best_matches = select_highest_scores(file)
 			best_matches = list(best_matches.values())
 			match_info = process_blast_results(best_matches, config['BLAST Score Ratio'], self_scores)
@@ -3264,7 +3273,8 @@ def Calculations(input_file, loci_list, schema_directory, output_directory,
 
 			# Get info for new representative alleles that must be added to files in the short directory
 			for locus_novel in novel_alleles:
-				locus_id = loci_finder.search(locus_novel[1]).group()
+				filename = os.path.basename(locus_novel[1])
+				locus_id = loci_finder.search(filename).group()
 				current_novel = fo.pickle_loader(locus_novel[1])
 				current_results = results['representatives'].get(locus_id, None)
 				if current_results is not None:
